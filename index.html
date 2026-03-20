@@ -1,304 +1,216 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>은행 지점 지도</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body { width: 100%; height: 100%; font-family: 'Pretendard', -apple-system, sans-serif; }
-        
-        #map, #kakao-map {
-            position: absolute; top: 0; right: 0; bottom: 0;
-            left: 320px; width: calc(100% - 320px);
-        }
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="stylesheet" href="css/leaflet.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jjimenezshaw/Leaflet.Control.Layers.Tree@master/L.Control.Layers.Tree.css">
+        <link rel="stylesheet" href="css/qgis2web.css">
+        <link rel="stylesheet" href="css/fontawesome-all.min.css">
+        <link rel="stylesheet" href="css/leaflet.photon.css">
+        <style>
+        html, body, #kakao-map, #map { width: 100%; height: 100%; padding: 0; margin: 0; }
+        #kakao-map, #map { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
         #kakao-map { z-index: 0; }
         #map { z-index: 1; background: transparent; }
-
-        /* 사이드 패널 */
-        #side-panel {
-            position: fixed; top: 0; left: 0; width: 320px; height: 100%;
-            background: #fff; z-index: 3000; display: flex; flex-direction: column;
-            box-shadow: 2px 0 12px rgba(0,0,0,0.08);
-        }
-        .panel-header {
-            padding: 20px; background: linear-gradient(135deg, #1a365d, #2b6cb0);
-            color: white;
-        }
-        .panel-header h1 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
-        .panel-header .subtitle { font-size: 11px; opacity: 0.8; }
-        .panel-count { font-size: 13px; margin-top: 8px; font-weight: 600; }
-        .panel-count span { color: #fbd38d; }
-
-        /* 필터 */
-        .filter-section { padding: 12px 16px; border-bottom: 1px solid #edf2f7; }
-        .filter-section label { font-size: 11px; font-weight: 600; color: #718096; display: block; margin-bottom: 6px; }
-        .filter-row { display: flex; flex-wrap: wrap; gap: 4px; }
-        .bank-chip {
-            padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;
-            cursor: pointer; border: 1.5px solid #e2e8f0; background: white; transition: all 0.15s;
-            user-select: none;
-        }
-        .bank-chip.active { color: white; border-color: transparent; }
-        .bank-chip:hover { transform: scale(1.05); }
-
-        .search-input {
-            width: 100%; padding: 8px 12px; border: 1.5px solid #e2e8f0; border-radius: 8px;
-            font-size: 12px; outline: none; margin-top: 8px;
-        }
-        .search-input:focus { border-color: #2b6cb0; }
-
-        /* 목록 */
-        #list-container { flex: 1; overflow-y: auto; }
-        .list-item {
-            padding: 12px 16px; border-bottom: 1px solid #f7fafc; cursor: pointer;
-            transition: background 0.15s;
-        }
-        .list-item:hover { background: #f0f7ff; }
-        .list-item .bank-badge {
-            display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px;
-            font-weight: 700; color: white; margin-bottom: 4px;
-        }
-        .list-item .name { font-size: 14px; font-weight: 700; color: #2d3748; }
-        .list-item .addr { font-size: 11px; color: #a0aec0; margin-top: 3px; }
-        .list-item .phone { font-size: 11px; color: #718096; margin-top: 2px; }
-
-        /* 팝업 스타일 */
-        .leaflet-popup-content-wrapper {
-            border-radius: 12px !important; border: none !important;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15) !important;
-        }
-        .leaflet-popup-content { margin: 0 !important; width: 280px !important; }
-        .popup-inner { padding: 16px; }
-        .popup-inner .bank-tag {
-            display: inline-block; padding: 3px 10px; border-radius: 4px;
-            font-size: 11px; font-weight: 700; color: white; margin-bottom: 8px;
-        }
-        .popup-inner .name { font-size: 16px; font-weight: 800; color: #1a202c; margin-bottom: 8px; }
-        .popup-inner .info-row { font-size: 12px; color: #4a5568; margin-bottom: 4px; }
-        .popup-inner .info-row b { color: #2d3748; min-width: 50px; display: inline-block; }
-
-        /* 툴팁 투명 배경 */
-        .leaflet-tooltip.bank-tooltip {
-            background: transparent !important; border: none !important;
-            box-shadow: none !important; padding: 0 !important;
-        }
-        .leaflet-tooltip-top.bank-tooltip:before { display: none !important; }
-
-        .empty-state {
-            padding: 40px 20px; text-align: center; color: #a0aec0; font-size: 13px;
-        }
-    </style>
-</head>
-<body>
-    <!-- 사이드 패널 -->
-    <div id="side-panel">
-        <div class="panel-header">
-            <h1>🏦 은행 지점 지도</h1>
-            <div class="subtitle">서울 · 인천 · 경기 은행 지점 현황</div>
-            <div class="panel-count">표시 중: <span id="visible-count">0</span>건</div>
+        .leaflet-popup-content table { border-collapse: collapse; width: 100%; }
+        .leaflet-popup-content th, .leaflet-popup-content td { padding: 2px 6px; vertical-align: top; word-break: break-word; white-space: normal; }
+        .leaflet-popup-content th { text-align: left; font-weight: 600; white-space: nowrap; opacity: 0.85; }
+        .popup-field-toggle { background: rgba(255,255,255,0.95); padding: 8px 10px; border-radius: 4px; box-shadow: 0 1px 5px rgba(0,0,0,0.3); max-height: 45vh; overflow: auto; font: 12px/1.2 Arial, Helvetica, sans-serif; }
+        .popup-field-toggle .title { font-weight: 700; margin-bottom: 6px; }
+        .popup-field-toggle .actions { display: flex; gap: 6px; margin-bottom: 6px; }
+        .popup-field-toggle .actions button { font-size: 11px; padding: 2px 6px; cursor: pointer; }
+        .popup-field-toggle label { display: flex; gap: 6px; align-items: center; margin: 3px 0; cursor: pointer; user-select: none; }
+        .leaflet-tooltip.css_map_data { max-width: none !important; width: max-content; white-space: normal; color: #000 !important; font-weight: bold; text-shadow: 1px 1px 2px white; }
+        .leaflet-tooltip.css_map_data .q2w-label { color: #000 !important; display: inline-block; max-width: none !important; }
+        .q2w-label.q2w-label--single { white-space: nowrap; }
+        .q2w-label.q2w-label--multi { white-space: pre-line; }
+        .labels-hidden .leaflet-tooltip-pane { display: none; }
+        .leaflet-popup-content-wrapper { width: 450px !important; border: 2px solid #0000ff; }
+        .leaflet-popup-content { width: 420px !important; }
+        .popup-image-container img { width: 100%; max-height: 300px; object-fit: contain; border-radius: 8px; margin-bottom: 10px; }
+        </style>
+        <style>
+            #map, #kakao-map { left: 350px !important; width: calc(100% - 350px) !important; }
+            .list-item { padding: 15px; border-bottom: 1px solid #eee; cursor: pointer; transition: background 0.2s; }
+            .list-item:hover { background: #f0f7ff; }
+            .list-item .title { font-weight: bold; font-size: 15px; margin-bottom: 5px; }
+            .list-item .price { color: #d32f2f; font-weight: bold; }
+            .list-item .info { font-size: 13px; color: #666; margin-top: 5px; }
+        </style>
+        <style>
+            .leaflet-tooltip.css_map_data_B, .leaflet-tooltip.css_map_data_A, .leaflet-tooltip.css_map_data_C,
+            .leaflet-tooltip.css_map_data_D, .leaflet-tooltip.css_map_data_E, .leaflet-tooltip.css_map_data_F,
+            .leaflet-tooltip.css_map_data_G { background-color: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; display: block !important; }
+            .custom-tooltip-box:empty { display: none !important; }
+            .custom-tooltip-box { background-color: #fff !important; border: 2px solid #3388ff !important; border-radius: 8px !important; padding: 10px 14px !important; box-shadow: 0 4px 12px rgba(0,0,0,0.25) !important; text-align: center; min-width: 100px; max-width: 250px; }
+            .text-main { font-weight: bold !important; color: #1a202c !important; font-size: 13px !important; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            .text-price { font-weight: 900 !important; color: #e53e3e !important; font-size: 15px !important; margin-top: 6px; border-top: 1px solid #edf2f7; padding-top: 6px; white-space: nowrap; }
+            .text-price:first-child { border-top: none !important; margin-top: 0 !important; padding-top: 0 !important; }
+            .labels-hidden .css_map_data_A, .labels-hidden .css_map_data_B, .labels-hidden .css_map_data_C,
+            .labels-hidden .css_map_data_D, .labels-hidden .css_map_data_E, .labels-hidden .css_map_data_F,
+            .labels-hidden .css_map_data_G { display: none !important; }
+            .leaflet-tooltip-top.css_map_data_A:before, .leaflet-tooltip-top.css_map_data_B:before,
+            .leaflet-tooltip-top.css_map_data_C:before, .leaflet-tooltip-top.css_map_data_D:before,
+            .leaflet-tooltip-top.css_map_data_E:before, .leaflet-tooltip-top.css_map_data_F:before,
+            .leaflet-tooltip-top.css_map_data_G:before { display: none !important; }
+            .leaflet-tooltip.draggable-tooltip { cursor: grab !important; }
+            .leaflet-tooltip.draggable-tooltip:active { cursor: grabbing !important; }
+            .building-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center; }
+            .building-modal-overlay.active { display: flex; }
+            .building-modal { background: white; border-radius: 16px; width: 560px; max-height: 85vh; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; display: flex; flex-direction: column; }
+            .building-modal-header { padding: 20px 24px; background: linear-gradient(135deg, #0051af, #0077ed); color: white; display: flex; align-items: center; justify-content: space-between; }
+            .building-modal-header h3 { margin: 0; font-size: 18px; }
+            .building-modal-body { padding: 24px; overflow-y: auto; flex: 1; }
+            .bm-field { margin-bottom: 14px; }
+            .bm-field label { display: block; font-size: 12px; font-weight: 600; color: #555; margin-bottom: 4px; }
+            .bm-field input, .bm-field select { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; box-sizing: border-box; transition: border 0.2s; }
+            .bm-field input:focus, .bm-field select:focus { border-color: #0051af; outline: none; }
+            .bm-row { display: flex; gap: 12px; }
+            .bm-row .bm-field { flex: 1; }
+            .bm-btn-run { width: 100%; padding: 14px; background: linear-gradient(135deg, #0051af, #0077ed); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; transition: opacity 0.2s; margin-top: 8px; }
+            .bm-btn-run:hover { opacity: 0.9; }
+            .bm-btn-run:disabled { background: #aaa; cursor: not-allowed; }
+            .bm-progress { margin-top: 16px; padding: 14px; background: #f8f9fa; border-radius: 10px; display: none; }
+            .bm-progress-bar { height: 6px; background: #e2e8f0; border-radius: 3px; margin-top: 8px; overflow: hidden; }
+            .bm-progress-fill { height: 100%; background: #0051af; border-radius: 3px; transition: width 0.3s; width: 0%; }
+            .bm-result { margin-top: 16px; display: none; }
+            .bm-download-btn { display: inline-block; padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; text-decoration: none; margin-top: 10px; }
+        </style>
+        <title></title>
+    </head>
+    <body>
+        <!-- ========== 로그인 화면 ========== -->
+        <div id="login-screen" style="position:fixed; top:0; left:0; width:100%; height:100%; background:linear-gradient(135deg,#0f172a,#1e3a5f); z-index:99999; display:flex; justify-content:center; align-items:center;">
+            <div style="background:white; border-radius:20px; padding:48px 40px; width:380px; box-shadow:0 20px 60px rgba(0,0,0,0.4); text-align:center;">
+                <div style="font-size:48px; margin-bottom:12px;">🗺️</div>
+                <h2 style="margin:0 0 6px; font-size:22px; color:#1e293b;">중앙감정 GIS</h2>
+                <p style="margin:0 0 28px; font-size:13px; color:#94a3b8;">접속하려면 비밀번호를 입력하세요</p>
+                <input type="password" id="login-pw" placeholder="비밀번호 입력" style="width:100%; padding:14px 16px; border:2px solid #e2e8f0; border-radius:12px; font-size:15px; box-sizing:border-box; outline:none; transition:border 0.2s;" onfocus="this.style.borderColor='#0051af'" onblur="this.style.borderColor='#e2e8f0'" onkeydown="if(event.key==='Enter') doLogin()">
+                <div id="login-error" style="color:#dc2626; font-size:12px; margin-top:8px; min-height:18px;"></div>
+                <button onclick="doLogin()" style="width:100%; padding:14px; background:linear-gradient(135deg,#0051af,#0077ed); color:white; border:none; border-radius:12px; font-size:16px; font-weight:bold; cursor:pointer; margin-top:8px; transition:opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">로그인</button>
+            </div>
         </div>
-        <div class="filter-section">
-            <label>은행 필터 (클릭으로 ON/OFF)</label>
-            <div class="filter-row" id="bank-filters"></div>
-            <input type="text" class="search-input" id="addr-filter" placeholder="주소 검색 (예: 강남, 분당, 인천)">
+        <script>
+        var SITE_PASSWORD = 'q9500!';
+        function doLogin() {
+            var pw = document.getElementById('login-pw').value;
+            if (pw === SITE_PASSWORD) { document.getElementById('login-screen').style.display = 'none'; sessionStorage.setItem('authenticated', 'yes'); }
+            else { document.getElementById('login-error').textContent = '비밀번호가 올바르지 않습니다.'; document.getElementById('login-pw').style.borderColor = '#dc2626'; document.getElementById('login-pw').value = ''; document.getElementById('login-pw').focus(); }
+        }
+        if (sessionStorage.getItem('authenticated') === 'yes') { document.getElementById('login-screen').style.display = 'none'; }
+        </script>
+
+        <div id="side-dashboard" style="position: fixed; top: 0; left: 0; width: 350px; height: 100%; background: white; z-index: 3000; box-shadow: 2px 0 10px rgba(0,0,0,0.1); display: flex; flex-direction: column;">
+            <div style="padding: 20px; border-bottom: 1px solid #eee; background: #f8f9fa;">
+                <h2 style="margin: 0; font-size: 18px; color: #333;">매물 리스트 <span id="list-count" style="color: #0051af;">0</span></h2>
+            </div>
+            <div id="list-container" style="flex: 1; overflow-y: auto; padding: 10px;"></div>
         </div>
-        <div id="list-container">
-            <div class="empty-state">지도를 움직이면 목록이 나타납니다</div>
+        <div id="kakao-map"></div>
+        <div id="map"></div>
+        <div id="roadview-panel" style="display:none; position:fixed; bottom:0; left:350px; right:0; height:35%; z-index:2000; background:#000; border-top:3px solid #0051af;">
+            <div style="position:absolute; top:0; left:0; right:0; height:32px; background:#0051af; display:flex; align-items:center; padding:0 12px; z-index:1;">
+                <span style="color:white; font-size:13px; font-weight:bold;">📷 로드뷰</span>
+                <span id="roadview-address" style="color:#cce4ff; font-size:12px; margin-left:10px;"></span>
+                <button onclick="closeRoadview()" style="margin-left:auto; background:transparent; border:none; color:white; font-size:18px; cursor:pointer; line-height:1;">✕</button>
+            </div>
+            <div id="roadview" style="position:absolute; top:32px; left:0; right:0; bottom:0;"></div>
         </div>
-    </div>
 
-    <div id="kakao-map"></div>
-    <div id="map"></div>
+        <div class="filter-panel" style="position: fixed; top: 20px; left: 370px; z-index: 2000; background: white; padding: 10px 14px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); width: 700px; font-family: sans-serif;">
+            <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                <h4 style="margin: 0; font-size: 13px; color: #333;">상세 필터</h4>
+                <span id="filter-layer-badge" style="font-size:11px; color:#fff; background:#0051af; padding:2px 7px; border-radius:10px; margin-left:8px;">A 데이터</span>
+                <span id="filter-result-count" style="font-size:12px; color:#0051af; font-weight:bold; margin-left:auto;"></span>
+                <button onclick="openBuildingSearchModal()" style="margin-left:10px; padding:4px 10px; background-color:#0051af; color:white; border:none; border-radius:5px; cursor:pointer; font-weight:bold; font-size:11px; white-space:nowrap;">🏗️ 건축물 검색</button>
+                <button onclick="exportToExcel()" style="margin-left:6px; padding:4px 10px; background-color:#28a745; color:white; border:none; border-radius:5px; cursor:pointer; font-weight:bold; font-size:11px; white-space:nowrap;">📊 엑셀 저장</button>
+            </div>
+            <div id="dynamic-filter-inputs" style="display:flex; flex-wrap:wrap; gap:6px; align-items:flex-end;"></div>
+            <div style="display:flex; align-items:center; gap:16px; margin-top:8px; padding-top:8px; border-top:1px solid #eee; flex-wrap:wrap;">
+                <div style="display:flex; align-items:center; gap:10px; font-size:12px;">
+                    <span style="font-size:11px; font-weight:bold; color:#555; white-space:nowrap;">🗺️ 지도</span>
+                    <label style="display:flex; align-items:center; gap:3px; cursor:pointer; white-space:nowrap;"><input type="checkbox" class="kakao-layer-toggle" data-type="USE_DISTRICT"> 지적편집도</label>
+                    <label style="display:flex; align-items:center; gap:3px; cursor:pointer; white-space:nowrap;"><input type="checkbox" class="kakao-layer-toggle" data-type="TRAFFIC"> 🚦 교통</label>
+                    <label style="display:flex; align-items:center; gap:3px; cursor:pointer; white-space:nowrap;"><input type="checkbox" class="kakao-layer-toggle" data-type="ROADVIEW"> 📷 로드뷰</label>
+                </div>
+                <div style="width:1px; height:18px; background:#ddd;"></div>
+                <div style="display:flex; align-items:center; gap:6px; font-size:12px;">
+                    <span style="font-size:11px; font-weight:bold; color:#0051af; white-space:nowrap;">📂 GeoJSON</span>
+                    <input type="file" id="external-geojson-input" accept=".json,.geojson" style="font-size:11px;">
+                </div>
+            </div>
+            <div id="external-label-controls"></div>
+        </div>
 
-    <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=231190ac1aca72ada0b739110d8a0eb4"></script>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="js/kakao_base.js"></script>
-    <script src="data/bank_1st.js"></script>
-    <script src="data/bank_2nd.js"></script>
-    <script>
-    // ========== 은행별 색상 ==========
-    var BANK_COLORS = {
-        'IBK기업은행': '#0051af',
-        'NH농협은행': '#00a651',
-        '신한은행': '#0046ff',
-        'iM뱅크(구 대구은행)': '#aa1f2e',
-        'BNK부산은행': '#e31837',
-        '광주은행': '#d4a017',
-        'BNK경남은행': '#f26522',
-        'KB국민은행': '#ffb300',
-        '하나은행': '#009688',
-        '새마을금고': '#6a1b9a',
-        'Sh수협은행': '#0277bd'
-    };
+        <!-- 건축물 검색 모달 (수정됨: 미리보기 테이블 제거, 버튼 1개) -->
+        <div class="building-modal-overlay" id="buildingModal">
+            <div class="building-modal">
+                <div class="building-modal-header">
+                    <h3>🏗️ 건축물대장 + 소유권 검색</h3>
+                    <button onclick="closeBuildingModal()" style="background:none; border:none; color:white; font-size:22px; cursor:pointer;">✕</button>
+                </div>
+                <div class="building-modal-body">
+                    <div class="bm-row">
+                        <div class="bm-field"><label>시도 *</label><input type="text" id="bm-sido" placeholder="예: 경기도" value="경기도"></div>
+                        <div class="bm-field"><label>시군구 *</label><input type="text" id="bm-sigungu" placeholder="예: 이천시"></div>
+                    </div>
+                    <div class="bm-row">
+                        <div class="bm-field"><label>읍면동 (비우면 전체 순회)</label><input type="text" id="bm-eupmyeondong" placeholder="예: 장호원읍"></div>
+                        <div class="bm-field"><label>리 (선택)</label><input type="text" id="bm-ri" placeholder="예: 장호원리"></div>
+                    </div>
+                    <div class="bm-field"><label>검색 용도 (콤마 구분)</label><input type="text" id="bm-uses" placeholder="예: 창고시설,창고" value="창고시설,창고"></div>
+                    <div id="bm-server-status" style="font-size:12px; color:#888; margin-bottom:8px;"></div>
+                    <button class="bm-btn-run" id="bm-run-btn" onclick="runBuildingSearch()">🔍 검색 시작 (건축물+소유권)</button>
+                    <div class="bm-progress" id="bm-progress">
+                        <div style="display:flex; justify-content:space-between; font-size:13px;">
+                            <span id="bm-progress-text">준비 중...</span>
+                            <span id="bm-progress-count" style="font-weight:bold; color:#0051af;">0건</span>
+                        </div>
+                        <div class="bm-progress-bar"><div class="bm-progress-fill" id="bm-progress-fill"></div></div>
+                    </div>
+                    <div class="bm-result" id="bm-result">
+                        <div style="display:flex; align-items:center; justify-content:space-between;">
+                            <span style="font-weight:bold; font-size:15px;">📋 검색 결과: <span id="bm-result-count" style="color:#0051af;">0</span>건</span>
+                            <a class="bm-download-btn" id="bm-download-btn" href="#" style="display:none;">📥 엑셀 다운로드</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    function getBankColor(name) {
-        return BANK_COLORS[name] || '#888';
-    }
-
-    // ========== Leaflet 맵 + 카카오맵 베이스 ==========
-    var map = L.map('map', {
-        zoomControl: true, maxZoom: 19, minZoom: 7,
-        attributionControl: false
-    }).setView([37.5, 127.0], 10);
-
-    initKakaoBaseMap(map, { mapTypeId: 'ROADMAP' });
-
-    // ========== 은행 필터 상태 ==========
-    var allBanks = Object.keys(BANK_COLORS);
-    var bankVisible = {};
-    allBanks.forEach(function(b) { bankVisible[b] = true; });
-    var addrKeyword = '';
-
-    // ========== 필터 칩 생성 ==========
-    var filterDiv = document.getElementById('bank-filters');
-    allBanks.forEach(function(bank) {
-        var chip = document.createElement('span');
-        chip.className = 'bank-chip active';
-        chip.textContent = bank.replace('(구 대구은행)', '').replace('iM뱅크', 'iM뱅크');
-        chip.style.background = getBankColor(bank);
-        chip.style.borderColor = getBankColor(bank);
-        chip.dataset.bank = bank;
-        chip.onclick = function() {
-            bankVisible[bank] = !bankVisible[bank];
-            if (bankVisible[bank]) {
-                chip.classList.add('active');
-                chip.style.background = getBankColor(bank);
-                chip.style.color = 'white';
-            } else {
-                chip.classList.remove('active');
-                chip.style.background = 'white';
-                chip.style.color = getBankColor(bank);
-            }
-            applyFilters();
-        };
-        filterDiv.appendChild(chip);
-    });
-
-    // 주소 검색
-    document.getElementById('addr-filter').addEventListener('input', function() {
-        addrKeyword = this.value.trim().toLowerCase();
-        applyFilters();
-    });
-
-    // ========== 레이어 생성 ==========
-    var allMarkers = [];
-
-    function createMarkers(geojson, group) {
-        L.geoJson(geojson, {
-            pointToLayer: function(feature, latlng) {
-                var bank = feature.properties['은행명'] || '';
-                var color = getBankColor(bank);
-                var marker = L.circleMarker(latlng, {
-                    radius: 6, fillColor: color, color: '#fff',
-                    weight: 1.5, fillOpacity: 0.85
-                });
-                marker._bankName = bank;
-                marker._props = feature.properties;
-                allMarkers.push(marker);
-                return marker;
-            },
-            onEachFeature: function(feature, layer) {
-                var p = feature.properties;
-                var color = getBankColor(p['은행명'] || '');
-                layer.bindPopup(
-                    '<div class="popup-inner">' +
-                    '<div class="bank-tag" style="background:' + color + ';">' + (p['은행명'] || '') + '</div>' +
-                    '<div class="name">' + (p['점포명'] || '') + '</div>' +
-                    '<div class="info-row"><b>지번</b> ' + (p['지번주소'] || '-') + '</div>' +
-                    '<div class="info-row"><b>도로명</b> ' + (p['도로명'] || '-') + '</div>' +
-                    '<div class="info-row"><b>전화</b> ' + (p['전화번호'] || '-') + '</div>' +
-                    '</div>',
-                    { maxWidth: 300 }
-                );
-            }
-        }).addTo(map);
-    }
-
-    createMarkers(json_bank_1st, '1금융');
-    createMarkers(json_bank_2nd, '2금융');
-
-    // ========== 필터 적용 ==========
-    function applyFilters() {
-        var visibleCount = 0;
-        allMarkers.forEach(function(marker) {
-            var bank = marker._bankName;
-            var addr = (marker._props['지번주소'] || '').toLowerCase();
-            var road = (marker._props['도로명'] || '').toLowerCase();
-            var name = (marker._props['점포명'] || '').toLowerCase();
-
-            var bankOk = bankVisible[bank] !== false;
-            var addrOk = !addrKeyword || addr.indexOf(addrKeyword) !== -1 || road.indexOf(addrKeyword) !== -1 || name.indexOf(addrKeyword) !== -1;
-
-            if (bankOk && addrOk) {
-                if (!map.hasLayer(marker)) map.addLayer(marker);
-                visibleCount++;
-            } else {
-                if (map.hasLayer(marker)) map.removeLayer(marker);
-            }
-        });
-        document.getElementById('visible-count').textContent = visibleCount.toLocaleString();
-        updateList();
-    }
-
-    // ========== 사이드 목록 업데이트 ==========
-    function updateList() {
-        var container = document.getElementById('list-container');
-        var bounds = map.getBounds();
-        var items = [];
-
-        allMarkers.forEach(function(marker) {
-            if (!map.hasLayer(marker)) return;
-            if (!bounds.contains(marker.getLatLng())) return;
-            items.push(marker);
-        });
-
-        // 지번주소 기준 정렬
-        items.sort(function(a, b) {
-            var addrA = a._props['지번주소'] || '';
-            var addrB = b._props['지번주소'] || '';
-            return addrA.localeCompare(addrB, 'ko');
-        });
-
-        if (items.length === 0) {
-            container.innerHTML = '<div class="empty-state">화면 내 표시할 지점이 없습니다</div>';
-            return;
-        }
-
-        // 최대 200건만 표시
-        var html = '';
-        var max = Math.min(items.length, 200);
-        for (var i = 0; i < max; i++) {
-            var m = items[i];
-            var p = m._props;
-            var color = getBankColor(p['은행명'] || '');
-            html += '<div class="list-item" data-id="' + m._leaflet_id + '" onclick="focusMarker(' + m._leaflet_id + ')">' +
-                '<span class="bank-badge" style="background:' + color + ';">' + (p['은행명'] || '') + '</span>' +
-                '<div class="name">' + (p['점포명'] || '') + '</div>' +
-                '<div class="addr">' + (p['지번주소'] || p['도로명'] || '') + '</div>' +
-                (p['전화번호'] ? '<div class="phone">📞 ' + p['전화번호'] + '</div>' : '') +
-                '</div>';
-        }
-        if (items.length > 200) {
-            html += '<div class="empty-state">외 ' + (items.length - 200) + '건 (줌인하면 더 표시)</div>';
-        }
-        container.innerHTML = html;
-    }
-
-    window.focusMarker = function(id) {
-        map.eachLayer(function(layer) {
-            if (layer._leaflet_id === id) {
-                map.setView(layer.getLatLng(), 16);
-                layer.openPopup();
-            }
-        });
-    };
-
-    map.on('moveend zoomend', updateList);
-
-    // 초기 필터 적용
-    applyFilters();
-    </script>
-</body>
-</html>
+        <script src="js/qgis2web_expressions.js"></script>
+        <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=231190ac1aca72ada0b739110d8a0eb4"></script>
+        <script src="js/leaflet.js"></script>
+        <script src="js/kakao_base.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/jjimenezshaw/Leaflet.Control.Layers.Tree@master/L.Control.Layers.Tree.js"></script>
+        <script src="js/leaflet.rotatedMarker.js"></script>
+        <script src="js/leaflet.pattern.js"></script>
+        <script src="js/leaflet-hash.js"></script>
+        <script src="js/Autolinker.min.js"></script>
+        <script src="js/rbush.min.js"></script>
+        <script src="js/labelgun.min.js"></script>
+        <script src="js/labels.js"></script>
+        <script src="js/leaflet.photon.js"></script>
+        <script src="data/map_data.js"></script>
+        <script src="data/B_data.js"></script>
+        <script src="data/C_data.js"></script>
+        <script src="data/D_data.js"></script>
+        <script src="data/E_data.js"></script>
+        <script src="data/F_data.js"></script>
+        <script src="data/G_data.js"></script>
+        <script>
+        var map = L.map('map', { zoomControl:false, maxZoom:28, minZoom:1 }).fitBounds([[37.43966984122166,126.86818683641245],[37.6101521616503,127.1412179712234]]);
+        initKakaoBaseMap(map, { mapTypeId: 'ROADMAP' });
+        var hash = new L.Hash(map);
+        map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
+        var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
+        var tooltipOffsets = {};
+        function getFeatureId(feature) { var p = feature.properties; return p['감정서번호'] || p['빌딩명'] || p['호텔명'] || p['골프장명(인수 후 명칭)'] || p['물류센터명'] || p['명칭'] || p['소재지(통'] || (p['위도'] + '_' + p['경도']) || JSON.stringify(p).substring(0, 80); }
+        function getStoredOffset(feature, defaultOffset) { var fid = getFeatureId(feature); if (tooltipOffsets[fid]) return [tooltipOffsets[fid].x, tooltipOffsets[fid].y]; return defaultOffset; }
+        function makeDraggableTooltip(layer) { if (!layer.getTooltip || !layer.getTooltip()) return; var tooltip = layer.getTooltip(); var el = tooltip.getElement(); if (!el || el._dragReady) return; el._dragReady = true; el.classList.add('draggable-tooltip'); var fid = getFeatureId(layer.feature); el.addEventListener('mousedown', function(e) { if (e.button !== 0) return; e.stopPropagation(); e.preventDefault(); var startX = e.clientX, startY = e.clientY; var cur = tooltipOffsets[fid] || { x: tooltip.options.offset[0], y: tooltip.options.offset[1] }; map.dragging.disable(); el.style.cursor = 'grabbing'; function onMove(ev) { var nx = cur.x + (ev.clientX - startX); var ny = cur.y + (ev.clientY - startY); tooltip.options.offset = [nx, ny]; tooltipOffsets[fid] = { x: nx, y: ny }; if (layer.getLatLng) tooltip.setLatLng(layer.getLatLng()); } function onUp() { map.dragging.enable(); el.style.cursor = 'grab'; document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); } document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onUp); }); }
+        function bindDraggableTooltip(layer, content, className, defaultOffset) { var offset = getStoredOffset(layer.feature, defaultOffset); layer.bindTooltip(content, { permanent: true, direction: 'top', className: className, offset: offset }); layer.on('tooltipopen', function() { setTimeout(function() { makeDraggableTooltip(layer); }, 50); }); }
+        </script>
