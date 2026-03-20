@@ -91,6 +91,9 @@
         .bank-tooltip-box .label-name { font-weight: bold !important; color: #1a202c !important; font-size: var(--label-font-main, 11px) !important; }
         .bank-tooltip-box .label-bank { font-size: var(--label-font-sub, 9px) !important; color: #fff !important; padding: 1px 5px; border-radius: 3px; display: inline-block; margin-top: 2px; }
         .bank-tooltip-box .label-manager { font-size: var(--label-font-sub, 9px) !important; color: #2b6cb0 !important; font-weight: 600; margin-top: 1px; }
+        .bank-tooltip-box .label-eval { font-size: var(--label-font-sub, 9px) !important; font-weight: 700; margin-top: 1px; display: inline-block; padding: 0 4px; border-radius: 3px; }
+        .bank-tooltip-box .label-eval.eval-o { color: #38a169 !important; background: #f0fff4; }
+        .bank-tooltip-box .label-eval.eval-x { color: #e53e3e !important; background: #fff5f5; }
         .leaflet-tooltip.draggable-tooltip { cursor: grab !important; }
         .leaflet-tooltip.draggable-tooltip:active { cursor: grabbing !important; }
         .labels-hidden .bank-label { display: none !important; }
@@ -171,7 +174,14 @@
         <div class="filter-section">
             <label>은행 필터 (클릭으로 ON/OFF)</label>
             <div class="filter-row" id="bank-filters"></div>
-            <div class="filter-row" style="margin-top:8px;">
+            <label style="margin-top:8px;">담당평가사 필터 (신한은행)</label>
+            <div class="filter-row">
+                <span class="bank-chip active" id="eval-filter-all" style="background:#2b6cb0;border-color:#2b6cb0;">전체</span>
+                <span class="bank-chip" id="eval-filter-o" style="color:#38a169;border-color:#38a169;">○ 접수이력 있음</span>
+                <span class="bank-chip" id="eval-filter-x" style="color:#e53e3e;border-color:#e53e3e;">✗ 접수이력 없음</span>
+            </div>
+            <label style="margin-top:8px;">담당자 필터</label>
+            <div class="filter-row">
                 <span class="bank-chip active" id="mgr-filter-all" style="background:#2b6cb0;border-color:#2b6cb0;">전체</span>
                 <span class="bank-chip" id="mgr-filter-yes" style="color:#38a169;border-color:#38a169;">✓ 담당자 있음</span>
                 <span class="bank-chip" id="mgr-filter-no" style="color:#e53e3e;border-color:#e53e3e;">✗ 담당자 없음</span>
@@ -289,13 +299,15 @@
         });
     }
 
-    // ========== 라벨 빌드 (담당자 포함) ==========
+    // ========== 라벨 빌드 (담당평가사 + 담당자 포함) ==========
     function buildBankLabel(p){
         var b=p['은행명']||'',n=p['점포명']||'',c=getBankColor(b);if(!n)return'';
-        var mid=getMid(p), mgr=getManager(mid);
+        var mid=getMid(p), mgr=getManager(mid), ev=p['담당평가사']||'';
         var html='<div class="bank-tooltip-box" style="border-color:'+c+' !important;">'+
             '<div class="label-name">'+n+'</div>'+
             '<span class="label-bank" style="background:'+c+';">'+b+'</span>';
+        if(ev==='O') html+='<div class="label-eval eval-o">○ 접수이력</div>';
+        else if(ev==='X') html+='<div class="label-eval eval-x">✗ 미접수</div>';
         if(mgr) html+='<div class="label-manager">👤 '+mgr+'</div>';
         html+='</div>';
         return html;
@@ -319,7 +331,27 @@
     var allBanks=Object.keys(BANK_COLORS),bankVisible={},addrKeyword='',labelsVisible=true;
     // 담당자 필터: 'all' | 'yes' | 'no'
     var mgrFilter='all';
+    // 담당평가사 필터: 'all' | 'o' | 'x'
+    var evalFilter='all';
     allBanks.forEach(function(b){bankVisible[b]=true;});
+
+    // 담당평가사 필터 버튼 이벤트
+    (function(){
+        var btnAll=document.getElementById('eval-filter-all');
+        var btnO=document.getElementById('eval-filter-o');
+        var btnX=document.getElementById('eval-filter-x');
+        function setEvalFilter(val){
+            evalFilter=val;
+            [btnAll,btnO,btnX].forEach(function(b){b.classList.remove('active');b.style.background='white';});
+            if(val==='all'){btnAll.classList.add('active');btnAll.style.background='#2b6cb0';btnAll.style.color='white';}
+            else if(val==='o'){btnO.classList.add('active');btnO.style.background='#38a169';btnO.style.color='white';}
+            else{btnX.classList.add('active');btnX.style.background='#e53e3e';btnX.style.color='white';}
+            applyFilters();
+        }
+        btnAll.onclick=function(){setEvalFilter('all');};
+        btnO.onclick=function(){setEvalFilter('o');};
+        btnX.onclick=function(){setEvalFilter('x');};
+    })();
 
     // 담당자 필터 버튼 이벤트
     (function(){
@@ -370,12 +402,16 @@
 
                 // 팝업: 마커 클릭 시 담당자 편집 가능
                 layer.on('click',function(){
-                    var curMgr=getManager(mid);
+                    var curMgr=getManager(mid), ev=p['담당평가사']||'';
+                    var evalHtml='';
+                    if(ev==='O') evalHtml='<div class="info-row"><b>접수이력</b> <span style="color:#38a169;font-weight:700;">○ 접수이력 있음</span></div>';
+                    else if(ev==='X') evalHtml='<div class="info-row"><b>접수이력</b> <span style="color:#e53e3e;font-weight:700;">✗ 접수이력 없음</span></div>';
                     var popupHtml='<div class="popup-inner"><div class="bank-tag" style="background:'+c+';">'+(p['은행명']||'')+'</div>'+
                         '<div class="name">'+(p['점포명']||'')+'</div>'+
                         '<div class="info-row"><b>지번</b> '+(p['지번주소']||'-')+'</div>'+
                         '<div class="info-row"><b>도로명</b> '+(p['도로명']||'-')+'</div>'+
                         '<div class="info-row"><b>전화</b> '+(p['전화번호']||'-')+'</div>'+
+                        evalHtml+
                         '<div class="manager-edit">'+
                             '<b>담당자</b>'+
                             '<input type="text" class="mgr-input" value="'+escHtml(curMgr)+'" placeholder="담당자명 입력">'+
@@ -412,15 +448,18 @@
     function escHtml(s){return(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
     createMarkers(json_bank_1st);createMarkers(json_bank_2nd);
 
-    // ========== 필터 적용 (담당자명 검색 + 담당자 유무 필터) ==========
+    // ========== 필터 적용 (담당평가사 + 담당자 + 텍스트 검색) ==========
     function applyFilters(){
         var cnt=0;
         allMarkers.forEach(function(m){
             var b=m._bankName,a=(m._props['지번주소']||'').toLowerCase(),r=(m._props['도로명']||'').toLowerCase(),n=(m._props['점포명']||'').toLowerCase();
-            var mid=getMid(m._props||{}), mgr=getManager(mid);
+            var mid=getMid(m._props||{}), mgr=getManager(mid), ev=m._props['담당평가사']||'';
             var mgrLow=mgr.toLowerCase();
             // 은행 필터 + 텍스트 검색
             var ok=bankVisible[b]!==false&&(!addrKeyword||a.indexOf(addrKeyword)!==-1||r.indexOf(addrKeyword)!==-1||n.indexOf(addrKeyword)!==-1||mgrLow.indexOf(addrKeyword)!==-1);
+            // 담당평가사 필터 (신한은행만 O/X 값이 있으므로, 다른 은행은 필터 'all' 아니면 제외)
+            if(ok && evalFilter==='o') ok=(ev==='O');
+            if(ok && evalFilter==='x') ok=(ev==='X');
             // 담당자 유무 필터
             if(ok && mgrFilter==='yes') ok=!!mgr;
             if(ok && mgrFilter==='no') ok=!mgr;
@@ -440,9 +479,12 @@
         var html='',max=Math.min(items.length,200);
         for(var i=0;i<max;i++){
             var m=items[i],p=m._props,col=getBankColor(p['은행명']||'');
-            var mid=getMid(p),mgr=getManager(mid);
+            var mid=getMid(p),mgr=getManager(mid),ev=p['담당평가사']||'';
+            var evalBadge='';
+            if(ev==='O') evalBadge='<span style="color:#38a169;font-weight:700;font-size:10px;margin-left:6px;">○ 접수이력</span>';
+            else if(ev==='X') evalBadge='<span style="color:#e53e3e;font-weight:700;font-size:10px;margin-left:6px;">✗ 미접수</span>';
             html+='<div class="list-item" onclick="focusMarker('+m._leaflet_id+')">'+
-                '<span class="bank-badge" style="background:'+col+';">'+(p['은행명']||'')+'</span>'+
+                '<span class="bank-badge" style="background:'+col+';">'+(p['은행명']||'')+'</span>'+evalBadge+
                 '<div class="name">'+(p['점포명']||'')+'</div>'+
                 '<div class="addr">'+(p['지번주소']||p['도로명']||'')+'</div>'+
                 (mgr?'<div class="manager">👤 '+mgr+'</div>':'')+
