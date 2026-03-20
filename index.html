@@ -114,6 +114,7 @@
 
     <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=231190ac1aca72ada0b739110d8a0eb4"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="js/kakao_base.js"></script>
     <script src="data/bank_1st.js"></script>
     <script src="data/bank_2nd.js"></script>
     <script>
@@ -136,27 +137,13 @@
         return BANK_COLORS[name] || '#888';
     }
 
-    // ========== 카카오맵 베이스 ==========
-    var kakaoMapDiv = document.getElementById('kakao-map');
-    var kakaoMap = new kakao.maps.Map(kakaoMapDiv, {
-        center: new kakao.maps.LatLng(37.5, 127.0),
-        level: 8
-    });
-
-    // ========== Leaflet 맵 ==========
+    // ========== Leaflet 맵 + 카카오맵 베이스 ==========
     var map = L.map('map', {
         zoomControl: true, maxZoom: 19, minZoom: 7,
         attributionControl: false
     }).setView([37.5, 127.0], 10);
 
-    // 카카오맵 동기화
-    map.on('moveend zoomend', function() {
-        var c = map.getCenter();
-        kakaoMap.setCenter(new kakao.maps.LatLng(c.lat, c.lng));
-        var leafletZoom = map.getZoom();
-        var kakaoLevel = Math.max(1, 14 - leafletZoom);
-        kakaoMap.setLevel(kakaoLevel);
-    });
+    initKakaoBaseMap(map, { mapTypeId: 'ROADMAP' });
 
     // ========== 은행 필터 상태 ==========
     var allBanks = Object.keys(BANK_COLORS);
