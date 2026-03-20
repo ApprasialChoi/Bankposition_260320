@@ -49,6 +49,7 @@
         .list-item .name { font-size: 14px; font-weight: 700; color: #2d3748; }
         .list-item .addr { font-size: 11px; color: #a0aec0; margin-top: 3px; }
         .list-item .phone { font-size: 11px; color: #718096; margin-top: 2px; }
+        .list-item .manager { font-size: 11px; color: #2b6cb0; margin-top: 2px; font-weight: 600; }
 
         /* ===== 팝업 ===== */
         .leaflet-popup-content-wrapper { border-radius: 12px !important; border: none !important; box-shadow: 0 4px 20px rgba(0,0,0,0.15) !important; }
@@ -58,6 +59,22 @@
         .popup-inner .name { font-size: 16px; font-weight: 800; color: #1a202c; margin-bottom: 8px; }
         .popup-inner .info-row { font-size: 12px; color: #4a5568; margin-bottom: 4px; }
         .popup-inner .info-row b { color: #2d3748; min-width: 50px; display: inline-block; }
+        .popup-inner .manager-edit {
+            display: flex; align-items: center; gap: 6px; margin-top: 8px;
+            padding-top: 8px; border-top: 1px solid #edf2f7;
+        }
+        .popup-inner .manager-edit b { color: #2d3748; font-size: 12px; min-width: 50px; flex-shrink: 0; }
+        .popup-inner .manager-edit input {
+            flex: 1; padding: 4px 8px; border: 1.5px solid #e2e8f0; border-radius: 6px;
+            font-size: 12px; outline: none; font-family: inherit; min-width: 0;
+        }
+        .popup-inner .manager-edit input:focus { border-color: #2b6cb0; }
+        .popup-inner .manager-edit .save-btn {
+            padding: 4px 10px; background: #2b6cb0; color: white; border: none;
+            border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; flex-shrink: 0;
+            transition: background 0.15s;
+        }
+        .popup-inner .manager-edit .save-btn:hover { background: #1a365d; }
         .empty-state { padding: 40px 20px; text-align: center; color: #a0aec0; font-size: 13px; }
 
         /* ===== 라벨 ===== */
@@ -73,6 +90,7 @@
         }
         .bank-tooltip-box .label-name { font-weight: bold !important; color: #1a202c !important; font-size: var(--label-font-main, 11px) !important; }
         .bank-tooltip-box .label-bank { font-size: var(--label-font-sub, 9px) !important; color: #fff !important; padding: 1px 5px; border-radius: 3px; display: inline-block; margin-top: 2px; }
+        .bank-tooltip-box .label-manager { font-size: var(--label-font-sub, 9px) !important; color: #2b6cb0 !important; font-weight: 600; margin-top: 1px; }
         .leaflet-tooltip.draggable-tooltip { cursor: grab !important; }
         .leaflet-tooltip.draggable-tooltip:active { cursor: grabbing !important; }
         .labels-hidden .bank-label { display: none !important; }
@@ -109,12 +127,7 @@
            모바일 반응형 (768px 이하)
            ========================================================= */
         @media (max-width: 768px) {
-            /* 지도 전체화면 */
-            #map, #kakao-map {
-                left: 0; width: 100%; top: 0; bottom: 0;
-            }
-
-            /* 사이드 패널 → 하단 드로어 */
+            #map, #kakao-map { left: 0; width: 100%; top: 0; bottom: 0; }
             #side-panel {
                 position: fixed; top: auto; left: 0; right: 0; bottom: 0;
                 width: 100%; height: 55vh;
@@ -123,44 +136,23 @@
                 transform: translateY(100%);
                 transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
             }
-            #side-panel.open {
-                transform: translateY(0);
-            }
-
+            #side-panel.open { transform: translateY(0); }
             .drawer-handle { display: block; }
-
-            .panel-header {
-                padding: 6px 16px 12px;
-                border-radius: 16px 16px 0 0;
-            }
+            .panel-header { padding: 6px 16px 12px; border-radius: 16px 16px 0 0; }
             .panel-header h1 { font-size: 16px; }
-
             .filter-section { padding: 10px 14px; }
             .bank-chip { padding: 3px 8px; font-size: 10px; }
-            .search-input { font-size: 14px; padding: 10px 12px; } /* 모바일에서 터치하기 쉽게 */
-
+            .search-input { font-size: 14px; padding: 10px 12px; }
             .list-item { padding: 10px 14px; }
             .list-item .name { font-size: 13px; }
-
-            /* 토글 버튼 표시 */
             #mobile-panel-toggle { display: block; }
-
-            /* 패널 열릴 때 토글 버튼 숨김 */
             #side-panel.open ~ #mobile-panel-toggle { display: none; }
-
-            /* 오버레이 */
             #side-panel.open ~ #panel-overlay { display: block; }
-
-            /* 팝업 너비 조정 */
             .leaflet-popup-content { width: 240px !important; }
             .popup-inner .name { font-size: 14px; }
-
-            /* 라벨 토글 컨트롤 위치 */
             .label-toggle-ctrl { font-size: 11px; }
             .label-toggle-ctrl button { font-size: 9px; padding: 4px 8px; }
         }
-
-        /* 아주 작은 화면 (iPhone SE 등) */
         @media (max-width: 380px) {
             #side-panel { height: 60vh; }
             .panel-header h1 { font-size: 15px; }
@@ -179,7 +171,12 @@
         <div class="filter-section">
             <label>은행 필터 (클릭으로 ON/OFF)</label>
             <div class="filter-row" id="bank-filters"></div>
-            <input type="text" class="search-input" id="addr-filter" placeholder="주소 검색 (예: 강남, 분당, 인천)">
+            <div class="filter-row" style="margin-top:8px;">
+                <span class="bank-chip active" id="mgr-filter-all" style="background:#2b6cb0;border-color:#2b6cb0;">전체</span>
+                <span class="bank-chip" id="mgr-filter-yes" style="color:#38a169;border-color:#38a169;">✓ 담당자 있음</span>
+                <span class="bank-chip" id="mgr-filter-no" style="color:#e53e3e;border-color:#e53e3e;">✗ 담당자 없음</span>
+            </div>
+            <input type="text" class="search-input" id="addr-filter" placeholder="주소 검색 (예: 강남, 분당, 담당자명)">
         </div>
         <div id="list-container"><div class="empty-state">지도를 움직이면 목록이 나타납니다</div></div>
     </div>
@@ -199,24 +196,14 @@
         var panel = document.getElementById('side-panel');
         var toggleBtn = document.getElementById('mobile-panel-toggle');
         var overlay = document.getElementById('panel-overlay');
-
         function openPanel(){ panel.classList.add('open'); }
         function closePanel(){ panel.classList.remove('open'); }
-
         toggleBtn.addEventListener('click', openPanel);
         overlay.addEventListener('click', closePanel);
-
-        // 드로어 핸들 드래그로 닫기
         var handle = panel.querySelector('.drawer-handle');
         var startY = 0, panelOpen = false;
-        handle.addEventListener('touchstart', function(e){
-            startY = e.touches[0].clientY;
-            panelOpen = panel.classList.contains('open');
-        }, {passive:true});
-        handle.addEventListener('touchend', function(e){
-            var dy = e.changedTouches[0].clientY - startY;
-            if(panelOpen && dy > 60) closePanel();
-        }, {passive:true});
+        handle.addEventListener('touchstart', function(e){ startY = e.touches[0].clientY; panelOpen = panel.classList.contains('open'); }, {passive:true});
+        handle.addEventListener('touchend', function(e){ var dy = e.changedTouches[0].clientY - startY; if(panelOpen && dy > 60) closePanel(); }, {passive:true});
     })();
 
     var BANK_COLORS = {
@@ -226,6 +213,22 @@
         '새마을금고':'#6a1b9a','Sh수협은행':'#0277bd'
     };
     function getBankColor(n){ return BANK_COLORS[n]||'#888'; }
+
+    // ========== localStorage 담당자 저장 ==========
+    var STORAGE_KEY = 'bankmap_managers';
+    function loadManagerData(){
+        try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch(e){ return {}; }
+    }
+    function saveManagerData(data){
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e){}
+    }
+    var managerData = loadManagerData();
+
+    function getManager(mid){ return managerData[mid] || ''; }
+    function setManager(mid, val){
+        if(val) managerData[mid] = val; else delete managerData[mid];
+        saveManagerData(managerData);
+    }
 
     var map = L.map('map',{zoomControl:true,maxZoom:19,minZoom:7,attributionControl:false}).setView([37.5,127.0],10);
     initKakaoBaseMap(map,{mapTypeId:'ROADMAP'});
@@ -286,17 +289,56 @@
         });
     }
 
-    // ========== 라벨 빌드 ==========
+    // ========== 라벨 빌드 (담당자 포함) ==========
     function buildBankLabel(p){
         var b=p['은행명']||'',n=p['점포명']||'',c=getBankColor(b);if(!n)return'';
-        return'<div class="bank-tooltip-box" style="border-color:'+c+' !important;">'+
+        var mid=getMid(p), mgr=getManager(mid);
+        var html='<div class="bank-tooltip-box" style="border-color:'+c+' !important;">'+
             '<div class="label-name">'+n+'</div>'+
-            '<span class="label-bank" style="background:'+c+';">'+b+'</span></div>';
+            '<span class="label-bank" style="background:'+c+';">'+b+'</span>';
+        if(mgr) html+='<div class="label-manager">👤 '+mgr+'</div>';
+        html+='</div>';
+        return html;
+    }
+
+    // ========== 라벨 갱신 (특정 마커) ==========
+    function refreshLabel(layer){
+        var p=layer._props||{}, mid=getMid(p);
+        var off=tooltipOffsets[mid]?[tooltipOffsets[mid].x,tooltipOffsets[mid].y]:[0,-12];
+        if(layer.getTooltip) layer.unbindTooltip();
+        if(connectorLines[mid]){map.removeLayer(connectorLines[mid]);delete connectorLines[mid];}
+        var lbl=buildBankLabel(p);
+        if(lbl){
+            layer.bindTooltip(lbl,{permanent:true,direction:'top',className:'bank-label',offset:off,interactive:true});
+            layer.on('tooltipopen',function(){setTimeout(function(){makeDraggableTooltip(layer);},50);});
+        }
+        setTimeout(function(){updateConnectorLine(layer);},100);
     }
 
     // ========== 필터 ==========
     var allBanks=Object.keys(BANK_COLORS),bankVisible={},addrKeyword='',labelsVisible=true;
+    // 담당자 필터: 'all' | 'yes' | 'no'
+    var mgrFilter='all';
     allBanks.forEach(function(b){bankVisible[b]=true;});
+
+    // 담당자 필터 버튼 이벤트
+    (function(){
+        var btnAll=document.getElementById('mgr-filter-all');
+        var btnYes=document.getElementById('mgr-filter-yes');
+        var btnNo=document.getElementById('mgr-filter-no');
+        function setMgrFilter(val){
+            mgrFilter=val;
+            [btnAll,btnYes,btnNo].forEach(function(b){b.classList.remove('active');b.style.background='white';});
+            if(val==='all'){btnAll.classList.add('active');btnAll.style.background='#2b6cb0';btnAll.style.color='white';}
+            else if(val==='yes'){btnYes.classList.add('active');btnYes.style.background='#38a169';btnYes.style.color='white';}
+            else{btnNo.classList.add('active');btnNo.style.background='#e53e3e';btnNo.style.color='white';}
+            applyFilters();
+        }
+        btnAll.onclick=function(){setMgrFilter('all');};
+        btnYes.onclick=function(){setMgrFilter('yes');};
+        btnNo.onclick=function(){setMgrFilter('no');};
+    })();
+
     var filterDiv=document.getElementById('bank-filters');
     allBanks.forEach(function(bank){
         var chip=document.createElement('span');chip.className='bank-chip active';
@@ -313,46 +355,83 @@
     document.getElementById('addr-filter').addEventListener('input',function(){addrKeyword=this.value.trim().toLowerCase();applyFilters();});
 
     // ========== 마커 생성 ==========
-    var allMarkers=[];
+    var allMarkers=[], markerByMid={};
     function createMarkers(geojson){
         L.geoJson(geojson,{
             pointToLayer:function(f,ll){
                 var b=f.properties['은행명']||'',c=getBankColor(b);
                 var m=L.circleMarker(ll,{radius:6,fillColor:c,color:'#fff',weight:1.5,fillOpacity:0.85});
-                m._bankName=b;m._props=f.properties;allMarkers.push(m);return m;
+                m._bankName=b;m._props=f.properties;allMarkers.push(m);
+                markerByMid[getMid(f.properties)]=m;
+                return m;
             },
             onEachFeature:function(f,layer){
-                var p=f.properties,c=getBankColor(p['은행명']||'');
-                layer.bindPopup('<div class="popup-inner"><div class="bank-tag" style="background:'+c+';">'+(p['은행명']||'')+'</div>'+
-                    '<div class="name">'+(p['점포명']||'')+'</div>'+
-                    '<div class="info-row"><b>지번</b> '+(p['지번주소']||'-')+'</div>'+
-                    '<div class="info-row"><b>도로명</b> '+(p['도로명']||'-')+'</div>'+
-                    '<div class="info-row"><b>전화</b> '+(p['전화번호']||'-')+'</div></div>',{maxWidth:300});
+                var p=f.properties,c=getBankColor(p['은행명']||''),mid=getMid(p);
+
+                // 팝업: 마커 클릭 시 담당자 편집 가능
+                layer.on('click',function(){
+                    var curMgr=getManager(mid);
+                    var popupHtml='<div class="popup-inner"><div class="bank-tag" style="background:'+c+';">'+(p['은행명']||'')+'</div>'+
+                        '<div class="name">'+(p['점포명']||'')+'</div>'+
+                        '<div class="info-row"><b>지번</b> '+(p['지번주소']||'-')+'</div>'+
+                        '<div class="info-row"><b>도로명</b> '+(p['도로명']||'-')+'</div>'+
+                        '<div class="info-row"><b>전화</b> '+(p['전화번호']||'-')+'</div>'+
+                        '<div class="manager-edit">'+
+                            '<b>담당자</b>'+
+                            '<input type="text" class="mgr-input" value="'+escHtml(curMgr)+'" placeholder="담당자명 입력">'+
+                            '<button class="save-btn">저장</button>'+
+                        '</div></div>';
+                    layer.unbindPopup();
+                    layer.bindPopup(popupHtml,{maxWidth:300}).openPopup();
+                    setTimeout(function(){
+                        var inp=document.querySelector('.mgr-input');
+                        var btn=document.querySelector('.manager-edit .save-btn');
+                        if(!inp||!btn) return;
+                        function doSave(){
+                            var val=inp.value.trim();
+                            setManager(mid, val);
+                            refreshLabel(layer);
+                            updateList();
+                            btn.textContent='✓'; btn.style.background='#38a169';
+                            setTimeout(function(){btn.textContent='저장';btn.style.background='';},800);
+                        }
+                        btn.onclick=doSave;
+                        inp.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();doSave();}});
+                    },80);
+                });
+
                 var lbl=buildBankLabel(p);
                 if(lbl){
-                    var mid=getMid(p),off=tooltipOffsets[mid]?[tooltipOffsets[mid].x,tooltipOffsets[mid].y]:[0,-12];
+                    var off=tooltipOffsets[mid]?[tooltipOffsets[mid].x,tooltipOffsets[mid].y]:[0,-12];
                     layer.bindTooltip(lbl,{permanent:true,direction:'top',className:'bank-label',offset:off,interactive:true});
                     layer.on('tooltipopen',function(){setTimeout(function(){makeDraggableTooltip(layer);},50);});
                 }
             }
         }).addTo(map);
     }
+    function escHtml(s){return(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
     createMarkers(json_bank_1st);createMarkers(json_bank_2nd);
 
-    // ========== 필터 적용 ==========
+    // ========== 필터 적용 (담당자명 검색 + 담당자 유무 필터) ==========
     function applyFilters(){
         var cnt=0;
         allMarkers.forEach(function(m){
             var b=m._bankName,a=(m._props['지번주소']||'').toLowerCase(),r=(m._props['도로명']||'').toLowerCase(),n=(m._props['점포명']||'').toLowerCase();
-            var ok=bankVisible[b]!==false&&(!addrKeyword||a.indexOf(addrKeyword)!==-1||r.indexOf(addrKeyword)!==-1||n.indexOf(addrKeyword)!==-1);
+            var mid=getMid(m._props||{}), mgr=getManager(mid);
+            var mgrLow=mgr.toLowerCase();
+            // 은행 필터 + 텍스트 검색
+            var ok=bankVisible[b]!==false&&(!addrKeyword||a.indexOf(addrKeyword)!==-1||r.indexOf(addrKeyword)!==-1||n.indexOf(addrKeyword)!==-1||mgrLow.indexOf(addrKeyword)!==-1);
+            // 담당자 유무 필터
+            if(ok && mgrFilter==='yes') ok=!!mgr;
+            if(ok && mgrFilter==='no') ok=!mgr;
             if(ok){if(!map.hasLayer(m))map.addLayer(m);cnt++;}
-            else{if(map.hasLayer(m))map.removeLayer(m);var mid=getMid(m._props||{});if(connectorLines[mid]){map.removeLayer(connectorLines[mid]);delete connectorLines[mid];}}
+            else{if(map.hasLayer(m))map.removeLayer(m);if(connectorLines[mid]){map.removeLayer(connectorLines[mid]);delete connectorLines[mid];}}
         });
         document.getElementById('visible-count').textContent=cnt.toLocaleString();
         updateList();setTimeout(updateAllConnectors,200);
     }
 
-    // ========== 사이드 목록 ==========
+    // ========== 사이드 목록 (담당자 표시) ==========
     function updateList(){
         var c=document.getElementById('list-container'),bounds=map.getBounds(),items=[];
         allMarkers.forEach(function(m){if(map.hasLayer(m)&&bounds.contains(m.getLatLng()))items.push(m);});
@@ -361,18 +440,19 @@
         var html='',max=Math.min(items.length,200);
         for(var i=0;i<max;i++){
             var m=items[i],p=m._props,col=getBankColor(p['은행명']||'');
+            var mid=getMid(p),mgr=getManager(mid);
             html+='<div class="list-item" onclick="focusMarker('+m._leaflet_id+')">'+
                 '<span class="bank-badge" style="background:'+col+';">'+(p['은행명']||'')+'</span>'+
                 '<div class="name">'+(p['점포명']||'')+'</div>'+
                 '<div class="addr">'+(p['지번주소']||p['도로명']||'')+'</div>'+
+                (mgr?'<div class="manager">👤 '+mgr+'</div>':'')+
                 (p['전화번호']?'<div class="phone">📞 '+p['전화번호']+'</div>':'')+'</div>';
         }
         if(items.length>200)html+='<div class="empty-state">외 '+(items.length-200)+'건 (줌인하면 더 표시)</div>';
         c.innerHTML=html;
     }
     window.focusMarker=function(id){
-        map.eachLayer(function(l){if(l._leaflet_id===id){map.setView(l.getLatLng(),16);l.openPopup();}});
-        // 모바일에서 마커 클릭 시 패널 닫기
+        map.eachLayer(function(l){if(l._leaflet_id===id){map.setView(l.getLatLng(),16);l.fire('click');}});
         var panel=document.getElementById('side-panel');
         if(window.innerWidth<=768) panel.classList.remove('open');
     };
