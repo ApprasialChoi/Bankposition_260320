@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>은행 지점 지도</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { width: 100%; height: 100%; font-family: 'Pretendard', -apple-system, sans-serif; }
+        
+        #map, #kakao-map {
+            position: absolute; top: 0; right: 0; bottom: 0;
+            left: 320px; width: calc(100% - 320px);
+        }
+        #kakao-map { z-index: 0; }
+        #map { z-index: 1; background: transparent; }
+
+        /* 사이드 패널 */
+        #side-panel {
+            position: fixed; top: 0; left: 0; width: 320px; height: 100%;
+            background: #fff; z-index: 3000; display: flex; flex-direction: column;
+            box-shadow: 2px 0 12px rgba(0,0,0,0.08);
+        }
+        .panel-header {
+            padding: 20px; background: linear-gradient(135deg, #1a365d, #2b6cb0);
+            color: white;
+        }
+        .panel-header h1 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+        .panel-header .subtitle { font-size: 11px; opacity: 0.8; }
+        .panel-count { font-size: 13px; margin-top: 8px; font-weight: 600; }
+        .panel-count span { color: #fbd38d; }
+
+        /* 필터 */
+        .filter-section { padding: 12px 16px; border-bottom: 1px solid #edf2f7; }
+        .filter-section label { font-size: 11px; font-weight: 600; color: #718096; display: block; margin-bottom: 6px; }
+        .filter-row { display: flex; flex-wrap: wrap; gap: 4px; }
+        .bank-chip {
+            padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;
+            cursor: pointer; border: 1.5px solid #e2e8f0; background: white; transition: all 0.15s;
+            user-select: none;
+        }
+        .bank-chip.active { color: white; border-color: transparent; }
+        .bank-chip:hover { transform: scale(1.05); }
+
+        .search-input {
+            width: 100%; padding: 8px 12px; border: 1.5px solid #e2e8f0; border-radius: 8px;
+            font-size: 12px; outline: none; margin-top: 8px;
+        }
+        .search-input:focus { border-color: #2b6cb0; }
+
+        /* 목록 */
+        #list-container { flex: 1; overflow-y: auto; }
+        .list-item {
+            padding: 12px 16px; border-bottom: 1px solid #f7fafc; cursor: pointer;
+            transition: background 0.15s;
+        }
+        .list-item:hover { background: #f0f7ff; }
+        .list-item .bank-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px;
+            font-weight: 700; color: white; margin-bottom: 4px;
+        }
+        .list-item .name { font-size: 14px; font-weight: 700; color: #2d3748; }
+        .list-item .addr { font-size: 11px; color: #a0aec0; margin-top: 3px; }
+        .list-item .phone { font-size: 11px; color: #718096; margin-top: 2px; }
+
+        /* 팝업 스타일 */
+        .leaflet-popup-content-wrapper {
+            border-radius: 12px !important; border: none !important;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15) !important;
+        }
+        .leaflet-popup-content { margin: 0 !important; width: 280px !important; }
+        .popup-inner { padding: 16px; }
+        .popup-inner .bank-tag {
+            display: inline-block; padding: 3px 10px; border-radius: 4px;
+            font-size: 11px; font-weight: 700; color: white; margin-bottom: 8px;
+        }
+        .popup-inner .name { font-size: 16px; font-weight: 800; color: #1a202c; margin-bottom: 8px; }
+        .popup-inner .info-row { font-size: 12px; color: #4a5568; margin-bottom: 4px; }
+        .popup-inner .info-row b { color: #2d3748; min-width: 50px; display: inline-block; }
+
+        /* 툴팁 투명 배경 */
+        .leaflet-tooltip.bank-tooltip {
+            background: transparent !important; border: none !important;
+            box-shadow: none !important; padding: 0 !important;
+        }
+        .leaflet-tooltip-top.bank-tooltip:before { display: none !important; }
+
+        .empty-state {
+            padding: 40px 20px; text-align: center; color: #a0aec0; font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 사이드 패널 -->
+    <div id="side-panel">
+        <div class="panel-header">
+            <h1>🏦 은행 지점 지도</h1>
+            <div class="subtitle">서울 · 인천 · 경기 은행 지점 현황</div>
+            <div class="panel-count">표시 중: <span id="visible-count">0</span>건</div>
+        </div>
+        <div class="filter-section">
+            <label>은행 필터 (클릭으로 ON/OFF)</label>
+            <div class="filter-row" id="bank-filters"></div>
+            <input type="text" class="search-input" id="addr-filter" placeholder="주소 검색 (예: 강남, 분당, 인천)">
+        </div>
+        <div id="list-container">
+            <div class="empty-state">지도를 움직이면 목록이 나타납니다</div>
+        </div>
+    </div>
+
+    <div id="kakao-map"></div>
+    <div id="map"></div>
+
+    <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=231190ac1aca72ada0b739110d8a0eb4"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="data/bank_1st.js"></script>
+    <script src="data/bank_2nd.js"></script>
+    <script>
+    // ========== 은행별 색상 ==========
+    var BANK_COLORS = {
+        'IBK기업은행': '#0051af',
+        'NH농협은행': '#00a651',
+        '신한은행': '#0046ff',
+        'iM뱅크(구 대구은행)': '#aa1f2e',
+        'BNK부산은행': '#e31837',
+        '광주은행': '#d4a017',
+        'BNK경남은행': '#f26522',
+        'KB국민은행': '#ffb300',
+        '하나은행': '#009688',
+        '새마을금고': '#6a1b9a',
+        'Sh수협은행': '#0277bd'
+    };
+
+    function getBankColor(name) {
+        return BANK_COLORS[name] || '#888';
+    }
+
+    // ========== 카카오맵 베이스 ==========
+    var kakaoMapDiv = document.getElementById('kakao-map');
+    var kakaoMap = new kakao.maps.Map(kakaoMapDiv, {
+        center: new kakao.maps.LatLng(37.5, 127.0),
+        level: 8
+    });
+
+    // ========== Leaflet 맵 ==========
+    var map = L.map('map', {
+        zoomControl: true, maxZoom: 19, minZoom: 7,
+        attributionControl: false
+    }).setView([37.5, 127.0], 10);
+
+    // 카카오맵 동기화
+    map.on('moveend zoomend', function() {
+        var c = map.getCenter();
+        kakaoMap.setCenter(new kakao.maps.LatLng(c.lat, c.lng));
+        var leafletZoom = map.getZoom();
+        var kakaoLevel = Math.max(1, 14 - leafletZoom);
+        kakaoMap.setLevel(kakaoLevel);
+    });
+
+    // ========== 은행 필터 상태 ==========
+    var allBanks = Object.keys(BANK_COLORS);
+    var bankVisible = {};
+    allBanks.forEach(function(b) { bankVisible[b] = true; });
+    var addrKeyword = '';
+
+    // ========== 필터 칩 생성 ==========
+    var filterDiv = document.getElementById('bank-filters');
+    allBanks.forEach(function(bank) {
+        var chip = document.createElement('span');
+        chip.className = 'bank-chip active';
+        chip.textContent = bank.replace('(구 대구은행)', '').replace('iM뱅크', 'iM뱅크');
+        chip.style.background = getBankColor(bank);
+        chip.style.borderColor = getBankColor(bank);
+        chip.dataset.bank = bank;
+        chip.onclick = function() {
+            bankVisible[bank] = !bankVisible[bank];
+            if (bankVisible[bank]) {
+                chip.classList.add('active');
+                chip.style.background = getBankColor(bank);
+                chip.style.color = 'white';
+            } else {
+                chip.classList.remove('active');
+                chip.style.background = 'white';
+                chip.style.color = getBankColor(bank);
+            }
+            applyFilters();
+        };
+        filterDiv.appendChild(chip);
+    });
+
+    // 주소 검색
+    document.getElementById('addr-filter').addEventListener('input', function() {
+        addrKeyword = this.value.trim().toLowerCase();
+        applyFilters();
+    });
+
+    // ========== 레이어 생성 ==========
+    var allMarkers = [];
+
+    function createMarkers(geojson, group) {
+        L.geoJson(geojson, {
+            pointToLayer: function(feature, latlng) {
+                var bank = feature.properties['은행명'] || '';
+                var color = getBankColor(bank);
+                var marker = L.circleMarker(latlng, {
+                    radius: 6, fillColor: color, color: '#fff',
+                    weight: 1.5, fillOpacity: 0.85
+                });
+                marker._bankName = bank;
+                marker._props = feature.properties;
+                allMarkers.push(marker);
+                return marker;
+            },
+            onEachFeature: function(feature, layer) {
+                var p = feature.properties;
+                var color = getBankColor(p['은행명'] || '');
+                layer.bindPopup(
+                    '<div class="popup-inner">' +
+                    '<div class="bank-tag" style="background:' + color + ';">' + (p['은행명'] || '') + '</div>' +
+                    '<div class="name">' + (p['점포명'] || '') + '</div>' +
+                    '<div class="info-row"><b>지번</b> ' + (p['지번주소'] || '-') + '</div>' +
+                    '<div class="info-row"><b>도로명</b> ' + (p['도로명'] || '-') + '</div>' +
+                    '<div class="info-row"><b>전화</b> ' + (p['전화번호'] || '-') + '</div>' +
+                    '</div>',
+                    { maxWidth: 300 }
+                );
+            }
+        }).addTo(map);
+    }
+
+    createMarkers(json_bank_1st, '1금융');
+    createMarkers(json_bank_2nd, '2금융');
+
+    // ========== 필터 적용 ==========
+    function applyFilters() {
+        var visibleCount = 0;
+        allMarkers.forEach(function(marker) {
+            var bank = marker._bankName;
+            var addr = (marker._props['지번주소'] || '').toLowerCase();
+            var road = (marker._props['도로명'] || '').toLowerCase();
+            var name = (marker._props['점포명'] || '').toLowerCase();
+
+            var bankOk = bankVisible[bank] !== false;
+            var addrOk = !addrKeyword || addr.indexOf(addrKeyword) !== -1 || road.indexOf(addrKeyword) !== -1 || name.indexOf(addrKeyword) !== -1;
+
+            if (bankOk && addrOk) {
+                if (!map.hasLayer(marker)) map.addLayer(marker);
+                visibleCount++;
+            } else {
+                if (map.hasLayer(marker)) map.removeLayer(marker);
+            }
+        });
+        document.getElementById('visible-count').textContent = visibleCount.toLocaleString();
+        updateList();
+    }
+
+    // ========== 사이드 목록 업데이트 ==========
+    function updateList() {
+        var container = document.getElementById('list-container');
+        var bounds = map.getBounds();
+        var items = [];
+
+        allMarkers.forEach(function(marker) {
+            if (!map.hasLayer(marker)) return;
+            if (!bounds.contains(marker.getLatLng())) return;
+            items.push(marker);
+        });
+
+        // 지번주소 기준 정렬
+        items.sort(function(a, b) {
+            var addrA = a._props['지번주소'] || '';
+            var addrB = b._props['지번주소'] || '';
+            return addrA.localeCompare(addrB, 'ko');
+        });
+
+        if (items.length === 0) {
+            container.innerHTML = '<div class="empty-state">화면 내 표시할 지점이 없습니다</div>';
+            return;
+        }
+
+        // 최대 200건만 표시
+        var html = '';
+        var max = Math.min(items.length, 200);
+        for (var i = 0; i < max; i++) {
+            var m = items[i];
+            var p = m._props;
+            var color = getBankColor(p['은행명'] || '');
+            html += '<div class="list-item" data-id="' + m._leaflet_id + '" onclick="focusMarker(' + m._leaflet_id + ')">' +
+                '<span class="bank-badge" style="background:' + color + ';">' + (p['은행명'] || '') + '</span>' +
+                '<div class="name">' + (p['점포명'] || '') + '</div>' +
+                '<div class="addr">' + (p['지번주소'] || p['도로명'] || '') + '</div>' +
+                (p['전화번호'] ? '<div class="phone">📞 ' + p['전화번호'] + '</div>' : '') +
+                '</div>';
+        }
+        if (items.length > 200) {
+            html += '<div class="empty-state">외 ' + (items.length - 200) + '건 (줌인하면 더 표시)</div>';
+        }
+        container.innerHTML = html;
+    }
+
+    window.focusMarker = function(id) {
+        map.eachLayer(function(layer) {
+            if (layer._leaflet_id === id) {
+                map.setView(layer.getLatLng(), 16);
+                layer.openPopup();
+            }
+        });
+    };
+
+    map.on('moveend zoomend', updateList);
+
+    // 초기 필터 적용
+    applyFilters();
+    </script>
+</body>
+</html>
