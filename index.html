@@ -50,6 +50,9 @@
         .list-item .addr { font-size: 11px; color: #a0aec0; margin-top: 3px; }
         .list-item .phone { font-size: 11px; color: #718096; margin-top: 2px; }
         .list-item .manager { font-size: 11px; color: #2b6cb0; margin-top: 2px; font-weight: 600; }
+        .list-item .visit-badges { margin-top: 4px; display: flex; gap: 4px; flex-wrap: wrap; }
+        .list-item .visit-badge-plan { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 9px; font-weight: 700; background: #fef3c7; color: #d97706; border: 1px solid #fbbf24; }
+        .list-item .visit-badge-done { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 9px; font-weight: 700; background: #d1fae5; color: #059669; border: 1px solid #34d399; }
 
         /* ===== 팝업 ===== */
         .leaflet-popup-content-wrapper { border-radius: 12px !important; border: none !important; box-shadow: 0 4px 20px rgba(0,0,0,0.15) !important; }
@@ -75,6 +78,27 @@
             transition: background 0.15s;
         }
         .popup-inner .manager-edit .save-btn:hover { background: #1a365d; }
+
+        /* ===== 팝업 방문 체크 영역 ===== */
+        .popup-inner .visit-section {
+            margin-top: 10px; padding-top: 10px; border-top: 1px solid #edf2f7;
+        }
+        .popup-inner .visit-row {
+            display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 12px;
+        }
+        .popup-inner .visit-row label {
+            display: flex; align-items: center; gap: 5px; cursor: pointer; font-weight: 600; color: #2d3748; user-select: none;
+        }
+        .popup-inner .visit-row input[type="checkbox"] {
+            width: 16px; height: 16px; accent-color: #2b6cb0; cursor: pointer; flex-shrink: 0;
+        }
+        .popup-inner .visit-row input[type="date"] {
+            padding: 3px 6px; border: 1.5px solid #e2e8f0; border-radius: 6px;
+            font-size: 11px; outline: none; font-family: inherit; color: #4a5568;
+        }
+        .popup-inner .visit-row input[type="date"]:focus { border-color: #2b6cb0; }
+        .popup-inner .visit-row .date-label { font-size: 11px; color: #718096; margin-left: 4px; }
+
         .empty-state { padding: 40px 20px; text-align: center; color: #a0aec0; font-size: 13px; }
 
         /* ===== 라벨 ===== */
@@ -94,6 +118,32 @@
         .bank-tooltip-box .label-eval { font-size: var(--label-font-sub, 9px) !important; font-weight: 700; margin-top: 1px; display: inline-block; padding: 0 4px; border-radius: 3px; }
         .bank-tooltip-box .label-eval.eval-o { color: #38a169 !important; background: #f0fff4; }
         .bank-tooltip-box .label-eval.eval-x { color: #e53e3e !important; background: #fff5f5; }
+
+        /* ===== 라벨 방문 뱃지 ===== */
+        .bank-tooltip-box .label-visit-badges { margin-top: 2px; display: flex; gap: 3px; justify-content: center; flex-wrap: wrap; }
+        .bank-tooltip-box .label-visit-plan {
+            font-size: 8px !important; font-weight: 700; color: #d97706; background: #fef3c7;
+            padding: 0 4px; border-radius: 2px; border: 1px solid #fbbf24;
+        }
+        .bank-tooltip-box .label-visit-done {
+            font-size: 8px !important; font-weight: 700; color: #059669; background: #d1fae5;
+            padding: 0 4px; border-radius: 2px; border: 1px solid #34d399;
+        }
+
+        /* ===== 라벨 바운스 애니메이션 ===== */
+        @keyframes labelBounceUp {
+            0%   { transform: scale(var(--label-scale,1)) translateY(0); }
+            20%  { transform: scale(var(--label-scale,1)) translateY(-18px); }
+            40%  { transform: scale(var(--label-scale,1)) translateY(-4px); }
+            55%  { transform: scale(var(--label-scale,1)) translateY(-12px); }
+            70%  { transform: scale(var(--label-scale,1)) translateY(-2px); }
+            85%  { transform: scale(var(--label-scale,1)) translateY(-6px); }
+            100% { transform: scale(var(--label-scale,1)) translateY(0); }
+        }
+        .bank-tooltip-box.bounce-anim {
+            animation: labelBounceUp 0.7s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+        }
+
         .leaflet-tooltip.draggable-tooltip { cursor: grab !important; }
         .leaflet-tooltip.draggable-tooltip:active { cursor: grabbing !important; }
         .labels-hidden .bank-label { display: none !important; }
@@ -101,7 +151,10 @@
         .label-toggle-ctrl button { font-size: 10px; padding: 3px 8px; cursor: pointer; border: 1px solid #ddd; border-radius: 4px; background: #fff; margin-right: 4px; }
         .label-toggle-ctrl button:hover { background: #f0f7ff; }
 
-        /* ===== 모바일 토글 버튼 (데스크탑에선 숨김) ===== */
+        /* ===== 방문 필터 ===== */
+        .filter-section .filter-sub-label { font-size: 11px; font-weight: 600; color: #718096; margin-top: 8px; margin-bottom: 6px; display: block; }
+
+        /* ===== 모바일 토글 버튼 ===== */
         #mobile-panel-toggle {
             display: none;
             position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
@@ -112,23 +165,16 @@
             transition: all 0.2s;
         }
         #mobile-panel-toggle:active { transform: translateX(-50%) scale(0.95); }
-
-        /* ===== 모바일 드로어 핸들 (데스크탑에선 숨김) ===== */
         .drawer-handle {
             display: none;
             width: 40px; height: 4px; background: #cbd5e0; border-radius: 2px;
             margin: 10px auto 6px;
         }
-
-        /* ===== 모바일 오버레이 ===== */
         #panel-overlay {
             display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0,0,0,0.3); z-index: 2999;
         }
 
-        /* =========================================================
-           모바일 반응형 (768px 이하)
-           ========================================================= */
         @media (max-width: 768px) {
             #map, #kakao-map { left: 0; width: 100%; top: 0; bottom: 0; }
             #side-panel {
@@ -186,6 +232,13 @@
                 <span class="bank-chip" id="mgr-filter-yes" style="color:#38a169;border-color:#38a169;">✓ 담당자 있음</span>
                 <span class="bank-chip" id="mgr-filter-no" style="color:#e53e3e;border-color:#e53e3e;">✗ 담당자 없음</span>
             </div>
+            <label style="margin-top:8px;">방문 필터</label>
+            <div class="filter-row">
+                <span class="bank-chip active" id="visit-filter-all" style="background:#2b6cb0;border-color:#2b6cb0;">전체</span>
+                <span class="bank-chip" id="visit-filter-plan" style="color:#d97706;border-color:#f59e0b;">📋 방문예정</span>
+                <span class="bank-chip" id="visit-filter-done" style="color:#059669;border-color:#34d399;">✅ 방문완료</span>
+                <span class="bank-chip" id="visit-filter-none" style="color:#718096;border-color:#a0aec0;">미설정</span>
+            </div>
             <input type="text" class="search-input" id="addr-filter" placeholder="주소 검색 (예: 강남, 분당, 담당자명)">
         </div>
         <div id="list-container"><div class="empty-state">지도를 움직이면 목록이 나타납니다</div></div>
@@ -233,11 +286,30 @@
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e){}
     }
     var managerData = loadManagerData();
-
     function getManager(mid){ return managerData[mid] || ''; }
     function setManager(mid, val){
         if(val) managerData[mid] = val; else delete managerData[mid];
         saveManagerData(managerData);
+    }
+
+    // ========== localStorage 방문 데이터 저장 ==========
+    var VISIT_STORAGE_KEY = 'bankmap_visits';
+    function loadVisitData(){
+        try { return JSON.parse(localStorage.getItem(VISIT_STORAGE_KEY)) || {}; } catch(e){ return {}; }
+    }
+    function saveVisitData(data){
+        try { localStorage.setItem(VISIT_STORAGE_KEY, JSON.stringify(data)); } catch(e){}
+    }
+    var visitData = loadVisitData();
+    // visitData[mid] = { planned: true/false, visited: true/false, visitDate: '2026-03-24' }
+    function getVisit(mid){ return visitData[mid] || { planned:false, visited:false, visitDate:'' }; }
+    function setVisit(mid, obj){
+        if(!obj.planned && !obj.visited && !obj.visitDate){
+            delete visitData[mid];
+        } else {
+            visitData[mid] = obj;
+        }
+        saveVisitData(visitData);
     }
 
     var map = L.map('map',{zoomControl:true,maxZoom:19,minZoom:7,attributionControl:false}).setView([37.5,127.0],10);
@@ -299,22 +371,44 @@
         });
     }
 
-    // ========== 라벨 빌드 (담당평가사 + 담당자 포함) ==========
+    // ========== 라벨 바운스 트리거 ==========
+    function triggerLabelBounce(layer){
+        if(!layer.getTooltip||!layer.getTooltip())return;
+        var tt=layer.getTooltip(),el=tt.getElement();
+        if(!el)return;
+        var box=el.querySelector('.bank-tooltip-box');
+        if(!box)return;
+        box.classList.remove('bounce-anim');
+        // reflow trigger
+        void box.offsetWidth;
+        box.classList.add('bounce-anim');
+        setTimeout(function(){ box.classList.remove('bounce-anim'); }, 800);
+    }
+
+    // ========== 라벨 빌드 (담당평가사 + 담당자 + 방문상태 포함) ==========
     function buildBankLabel(p){
         var b=p['은행명']||'',n=p['점포명']||'',c=getBankColor(b);if(!n)return'';
         var mid=getMid(p), mgr=getManager(mid), ev=p['담당평가사']||'';
+        var v=getVisit(mid);
         var html='<div class="bank-tooltip-box" style="border-color:'+c+' !important;">'+
             '<div class="label-name">'+n+'</div>'+
             '<span class="label-bank" style="background:'+c+';">'+b+'</span>';
         if(ev==='O') html+='<div class="label-eval eval-o">○ 접수이력</div>';
         else if(ev==='X') html+='<div class="label-eval eval-x">✗ 미접수</div>';
         if(mgr) html+='<div class="label-manager">👤 '+mgr+'</div>';
+        // 방문 뱃지
+        if(v.planned || v.visited){
+            html+='<div class="label-visit-badges">';
+            if(v.planned) html+='<span class="label-visit-plan">📋 방문예정</span>';
+            if(v.visited) html+='<span class="label-visit-done">✅ '+(v.visitDate||'방문완료')+'</span>';
+            html+='</div>';
+        }
         html+='</div>';
         return html;
     }
 
     // ========== 라벨 갱신 (특정 마커) ==========
-    function refreshLabel(layer){
+    function refreshLabel(layer, doBounce){
         var p=layer._props||{}, mid=getMid(p);
         var off=tooltipOffsets[mid]?[tooltipOffsets[mid].x,tooltipOffsets[mid].y]:[0,-12];
         if(layer.getTooltip) layer.unbindTooltip();
@@ -324,15 +418,17 @@
             layer.bindTooltip(lbl,{permanent:true,direction:'top',className:'bank-label',offset:off,interactive:true});
             layer.on('tooltipopen',function(){setTimeout(function(){makeDraggableTooltip(layer);},50);});
         }
-        setTimeout(function(){updateConnectorLine(layer);},100);
+        setTimeout(function(){
+            updateConnectorLine(layer);
+            if(doBounce) triggerLabelBounce(layer);
+        },100);
     }
 
     // ========== 필터 ==========
     var allBanks=Object.keys(BANK_COLORS),bankVisible={},addrKeyword='',labelsVisible=true;
-    // 담당자 필터: 'all' | 'yes' | 'no'
     var mgrFilter='all';
-    // 담당평가사 필터: 'all' | 'o' | 'x'
     var evalFilter='all';
+    var visitFilter='all'; // 'all' | 'plan' | 'done' | 'none'
     allBanks.forEach(function(b){bankVisible[b]=true;});
 
     // 담당평가사 필터 버튼 이벤트
@@ -371,6 +467,27 @@
         btnNo.onclick=function(){setMgrFilter('no');};
     })();
 
+    // 방문 필터 버튼 이벤트
+    (function(){
+        var btnAll=document.getElementById('visit-filter-all');
+        var btnPlan=document.getElementById('visit-filter-plan');
+        var btnDone=document.getElementById('visit-filter-done');
+        var btnNone=document.getElementById('visit-filter-none');
+        function setVisitFilter(val){
+            visitFilter=val;
+            [btnAll,btnPlan,btnDone,btnNone].forEach(function(b){b.classList.remove('active');b.style.background='white';});
+            if(val==='all'){btnAll.classList.add('active');btnAll.style.background='#2b6cb0';btnAll.style.color='white';}
+            else if(val==='plan'){btnPlan.classList.add('active');btnPlan.style.background='#d97706';btnPlan.style.color='white';}
+            else if(val==='done'){btnDone.classList.add('active');btnDone.style.background='#059669';btnDone.style.color='white';}
+            else{btnNone.classList.add('active');btnNone.style.background='#718096';btnNone.style.color='white';}
+            applyFilters();
+        }
+        btnAll.onclick=function(){setVisitFilter('all');};
+        btnPlan.onclick=function(){setVisitFilter('plan');};
+        btnDone.onclick=function(){setVisitFilter('done');};
+        btnNone.onclick=function(){setVisitFilter('none');};
+    })();
+
     var filterDiv=document.getElementById('bank-filters');
     allBanks.forEach(function(bank){
         var chip=document.createElement('span');chip.className='bank-chip active';
@@ -400,9 +517,10 @@
             onEachFeature:function(f,layer){
                 var p=f.properties,c=getBankColor(p['은행명']||''),mid=getMid(p);
 
-                // 팝업: 마커 클릭 시 담당자 편집 가능
+                // 팝업: 마커 클릭 시 담당자 + 방문 편집 가능
                 layer.on('click',function(){
                     var curMgr=getManager(mid), ev=p['담당평가사']||'';
+                    var curVisit=getVisit(mid);
                     var evalHtml='';
                     if(ev==='O') evalHtml='<div class="info-row"><b>접수이력</b> <span style="color:#38a169;font-weight:700;">○ 접수이력 있음</span></div>';
                     else if(ev==='X') evalHtml='<div class="info-row"><b>접수이력</b> <span style="color:#e53e3e;font-weight:700;">✗ 접수이력 없음</span></div>';
@@ -415,24 +533,83 @@
                         '<div class="manager-edit">'+
                             '<b>담당자</b>'+
                             '<input type="text" class="mgr-input" value="'+escHtml(curMgr)+'" placeholder="담당자명 입력">'+
-                            '<button class="save-btn">저장</button>'+
-                        '</div></div>';
+                            '<button class="save-btn mgr-save-btn">저장</button>'+
+                        '</div>'+
+                        '<div class="visit-section">'+
+                            '<div class="visit-row">'+
+                                '<label><input type="checkbox" class="visit-plan-chk" '+(curVisit.planned?'checked':'')+'>'+
+                                '<span style="color:#d97706;">📋 방문예정은행</span></label>'+
+                            '</div>'+
+                            '<div class="visit-row">'+
+                                '<label><input type="checkbox" class="visit-done-chk" '+(curVisit.visited?'checked':'')+'>'+
+                                '<span style="color:#059669;">✅ 방문한 은행</span></label>'+
+                                '<input type="date" class="visit-date-input" value="'+(curVisit.visitDate||'')+'" title="방문일">'+
+                            '</div>'+
+                        '</div>'+
+                        '</div>';
                     layer.unbindPopup();
                     layer.bindPopup(popupHtml,{maxWidth:300}).openPopup();
                     setTimeout(function(){
                         var inp=document.querySelector('.mgr-input');
-                        var btn=document.querySelector('.manager-edit .save-btn');
+                        var btn=document.querySelector('.mgr-save-btn');
+                        var planChk=document.querySelector('.visit-plan-chk');
+                        var doneChk=document.querySelector('.visit-done-chk');
+                        var dateInp=document.querySelector('.visit-date-input');
                         if(!inp||!btn) return;
-                        function doSave(){
+
+                        // 담당자 저장
+                        function doSaveMgr(){
                             var val=inp.value.trim();
                             setManager(mid, val);
-                            refreshLabel(layer);
+                            refreshLabel(layer, false);
                             updateList();
                             btn.textContent='✓'; btn.style.background='#38a169';
                             setTimeout(function(){btn.textContent='저장';btn.style.background='';},800);
                         }
-                        btn.onclick=doSave;
-                        inp.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();doSave();}});
+                        btn.onclick=doSaveMgr;
+                        inp.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();doSaveMgr();}});
+
+                        // 방문예정 체크
+                        if(planChk){
+                            planChk.onchange=function(){
+                                var v=getVisit(mid);
+                                v.planned=this.checked;
+                                setVisit(mid,v);
+                                refreshLabel(layer, this.checked);
+                                updateList();
+                            };
+                        }
+                        // 방문완료 체크
+                        if(doneChk){
+                            doneChk.onchange=function(){
+                                var v=getVisit(mid);
+                                v.visited=this.checked;
+                                if(this.checked && !v.visitDate){
+                                    // 자동으로 오늘 날짜 세팅
+                                    var today=new Date().toISOString().slice(0,10);
+                                    v.visitDate=today;
+                                    if(dateInp) dateInp.value=today;
+                                }
+                                if(!this.checked){ v.visitDate=''; if(dateInp) dateInp.value=''; }
+                                setVisit(mid,v);
+                                refreshLabel(layer, this.checked);
+                                updateList();
+                            };
+                        }
+                        // 방문일 변경
+                        if(dateInp){
+                            dateInp.onchange=function(){
+                                var v=getVisit(mid);
+                                v.visitDate=this.value;
+                                if(this.value && !v.visited){
+                                    v.visited=true;
+                                    if(doneChk) doneChk.checked=true;
+                                }
+                                setVisit(mid,v);
+                                refreshLabel(layer, !!this.value);
+                                updateList();
+                            };
+                        }
                     },80);
                 });
 
@@ -448,21 +625,27 @@
     function escHtml(s){return(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
     createMarkers(json_bank_1st);createMarkers(json_bank_2nd);
 
-    // ========== 필터 적용 (담당평가사 + 담당자 + 텍스트 검색) ==========
+    // ========== 필터 적용 ==========
     function applyFilters(){
         var cnt=0;
         allMarkers.forEach(function(m){
             var b=m._bankName,a=(m._props['지번주소']||'').toLowerCase(),r=(m._props['도로명']||'').toLowerCase(),n=(m._props['점포명']||'').toLowerCase();
             var mid=getMid(m._props||{}), mgr=getManager(mid), ev=m._props['담당평가사']||'';
             var mgrLow=mgr.toLowerCase();
+            var v=getVisit(mid);
             // 은행 필터 + 텍스트 검색
             var ok=bankVisible[b]!==false&&(!addrKeyword||a.indexOf(addrKeyword)!==-1||r.indexOf(addrKeyword)!==-1||n.indexOf(addrKeyword)!==-1||mgrLow.indexOf(addrKeyword)!==-1);
-            // 담당평가사 필터 (신한은행만 O/X 값이 있으므로, 다른 은행은 필터 'all' 아니면 제외)
+            // 담당평가사 필터
             if(ok && evalFilter==='o') ok=(ev==='O');
             if(ok && evalFilter==='x') ok=(ev==='X');
             // 담당자 유무 필터
             if(ok && mgrFilter==='yes') ok=!!mgr;
             if(ok && mgrFilter==='no') ok=!mgr;
+            // 방문 필터
+            if(ok && visitFilter==='plan') ok=!!v.planned;
+            if(ok && visitFilter==='done') ok=!!v.visited;
+            if(ok && visitFilter==='none') ok=(!v.planned && !v.visited);
+
             if(ok){if(!map.hasLayer(m))map.addLayer(m);cnt++;}
             else{if(map.hasLayer(m))map.removeLayer(m);if(connectorLines[mid]){map.removeLayer(connectorLines[mid]);delete connectorLines[mid];}}
         });
@@ -470,7 +653,7 @@
         updateList();setTimeout(updateAllConnectors,200);
     }
 
-    // ========== 사이드 목록 (담당자 표시) ==========
+    // ========== 사이드 목록 ==========
     function updateList(){
         var c=document.getElementById('list-container'),bounds=map.getBounds(),items=[];
         allMarkers.forEach(function(m){if(map.hasLayer(m)&&bounds.contains(m.getLatLng()))items.push(m);});
@@ -480,14 +663,23 @@
         for(var i=0;i<max;i++){
             var m=items[i],p=m._props,col=getBankColor(p['은행명']||'');
             var mid=getMid(p),mgr=getManager(mid),ev=p['담당평가사']||'';
+            var v=getVisit(mid);
             var evalBadge='';
             if(ev==='O') evalBadge='<span style="color:#38a169;font-weight:700;font-size:10px;margin-left:6px;">○ 접수이력</span>';
             else if(ev==='X') evalBadge='<span style="color:#e53e3e;font-weight:700;font-size:10px;margin-left:6px;">✗ 미접수</span>';
+            var visitBadges='';
+            if(v.planned || v.visited){
+                visitBadges='<div class="visit-badges">';
+                if(v.planned) visitBadges+='<span class="visit-badge-plan">📋 방문예정</span>';
+                if(v.visited) visitBadges+='<span class="visit-badge-done">✅ '+(v.visitDate||'방문완료')+'</span>';
+                visitBadges+='</div>';
+            }
             html+='<div class="list-item" onclick="focusMarker('+m._leaflet_id+')">'+
                 '<span class="bank-badge" style="background:'+col+';">'+(p['은행명']||'')+'</span>'+evalBadge+
                 '<div class="name">'+(p['점포명']||'')+'</div>'+
                 '<div class="addr">'+(p['지번주소']||p['도로명']||'')+'</div>'+
                 (mgr?'<div class="manager">👤 '+mgr+'</div>':'')+
+                visitBadges+
                 (p['전화번호']?'<div class="phone">📞 '+p['전화번호']+'</div>':'')+'</div>';
         }
         if(items.length>200)html+='<div class="empty-state">외 '+(items.length-200)+'건 (줌인하면 더 표시)</div>';
