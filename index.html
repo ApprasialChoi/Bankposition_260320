@@ -445,8 +445,8 @@
             applyFilters();
         }
         btnAll.onclick=function(){setEvalFilter('all');};
-        btnO.onclick=function(){setEvalFilter('o');};
-        btnX.onclick=function(){setEvalFilter('x');};
+        btnO.onclick=function(){setEvalFilter(evalFilter==='o'?'all':'o');};
+        btnX.onclick=function(){setEvalFilter(evalFilter==='x'?'all':'x');};
     })();
 
     // 담당자 필터 버튼 이벤트
@@ -463,8 +463,8 @@
             applyFilters();
         }
         btnAll.onclick=function(){setMgrFilter('all');};
-        btnYes.onclick=function(){setMgrFilter('yes');};
-        btnNo.onclick=function(){setMgrFilter('no');};
+        btnYes.onclick=function(){setMgrFilter(mgrFilter==='yes'?'all':'yes');};
+        btnNo.onclick=function(){setMgrFilter(mgrFilter==='no'?'all':'no');};
     })();
 
     // 방문 필터 버튼 이벤트
@@ -483,9 +483,9 @@
             applyFilters();
         }
         btnAll.onclick=function(){setVisitFilter('all');};
-        btnPlan.onclick=function(){setVisitFilter('plan');};
-        btnDone.onclick=function(){setVisitFilter('done');};
-        btnNone.onclick=function(){setVisitFilter('none');};
+        btnPlan.onclick=function(){setVisitFilter(visitFilter==='plan'?'all':'plan');};
+        btnDone.onclick=function(){setVisitFilter(visitFilter==='done'?'all':'done');};
+        btnNone.onclick=function(){setVisitFilter(visitFilter==='none'?'all':'none');};
     })();
 
     var filterDiv=document.getElementById('bank-filters');
