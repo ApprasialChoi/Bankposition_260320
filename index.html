@@ -54,6 +54,30 @@
         .list-item .visit-badge-plan { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 9px; font-weight: 700; background: #fef3c7; color: #d97706; border: 1px solid #fbbf24; }
         .list-item .visit-badge-done { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 9px; font-weight: 700; background: #d1fae5; color: #059669; border: 1px solid #34d399; }
 
+        /* ===== 팀원 필터 칩 ===== */
+        .team-chip {
+            padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;
+            cursor: pointer; border: 1.5px solid #e2e8f0; background: white;
+            transition: all 0.15s; user-select: none;
+            display: inline-flex; align-items: center; gap: 4px;
+        }
+        .team-chip:hover { transform: scale(1.05); }
+        .team-chip.active { color: white !important; border-color: transparent; }
+        .team-chip .chip-count {
+            background: #edf2f7; color: #4a5568;
+            padding: 1px 6px; border-radius: 10px; font-size: 10px; font-weight: 700;
+        }
+        .team-chip.active .chip-count {
+            background: rgba(255,255,255,0.3); color: white;
+        }
+        .team-info-bar {
+            background: #f0f7ff; padding: 8px 12px; border-radius: 6px;
+            margin-top: 8px; font-size: 11px; color: #2b6cb0;
+            display: none; line-height: 1.5;
+        }
+        .team-info-bar.visible { display: block; }
+        .team-info-bar b { font-weight: 700; }
+
         /* ===== 팝업 ===== */
         .leaflet-popup-content-wrapper { border-radius: 12px !important; border: none !important; box-shadow: 0 4px 20px rgba(0,0,0,0.15) !important; }
         .leaflet-popup-content { margin: 0 !important; width: 280px !important; }
@@ -118,6 +142,11 @@
         .bank-tooltip-box .label-eval { font-size: var(--label-font-sub, 9px) !important; font-weight: 700; margin-top: 1px; display: inline-block; padding: 0 4px; border-radius: 3px; }
         .bank-tooltip-box .label-eval.eval-o { color: #38a169 !important; background: #f0fff4; }
         .bank-tooltip-box .label-eval.eval-x { color: #e53e3e !important; background: #fff5f5; }
+        .bank-tooltip-box .label-team {
+            font-size: var(--label-font-sub, 9px) !important; font-weight: 700;
+            margin-top: 2px; padding: 1px 5px; border-radius: 3px;
+            color: white !important; display: inline-block;
+        }
 
         /* ===== 라벨 방문 뱃지 ===== */
         .bank-tooltip-box .label-visit-badges { margin-top: 2px; display: flex; gap: 3px; justify-content: center; flex-wrap: wrap; }
@@ -190,7 +219,7 @@
             .panel-header { padding: 6px 16px 12px; border-radius: 16px 16px 0 0; }
             .panel-header h1 { font-size: 16px; }
             .filter-section { padding: 10px 14px; }
-            .bank-chip { padding: 3px 8px; font-size: 10px; }
+            .bank-chip, .team-chip { padding: 3px 8px; font-size: 10px; }
             .search-input { font-size: 14px; padding: 10px 12px; }
             .list-item { padding: 10px 14px; }
             .list-item .name { font-size: 13px; }
@@ -205,7 +234,7 @@
         @media (max-width: 380px) {
             #side-panel { height: 60vh; }
             .panel-header h1 { font-size: 15px; }
-            .bank-chip { font-size: 9px; padding: 2px 6px; }
+            .bank-chip, .team-chip { font-size: 9px; padding: 2px 6px; }
         }
     </style>
 </head>
@@ -218,8 +247,13 @@
             <div class="panel-count">표시 중: <span id="visible-count">0</span>건</div>
         </div>
         <div class="filter-section">
-            <label>은행 필터 (클릭으로 ON/OFF)</label>
+            <label>👥 팀원별 담당지역 (IBK기업은행)</label>
+            <div class="filter-row" id="team-filters"></div>
+            <div class="team-info-bar" id="team-info-bar"></div>
+
+            <label style="margin-top:12px;">은행 필터 (클릭으로 ON/OFF)</label>
             <div class="filter-row" id="bank-filters"></div>
+
             <label style="margin-top:8px;">담당평가사 필터 (신한은행)</label>
             <div class="filter-row">
                 <span class="bank-chip active" id="eval-filter-all" style="background:#2b6cb0;border-color:#2b6cb0;">전체</span>
@@ -251,9 +285,16 @@
     <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=231190ac1aca72ada0b739110d8a0eb4"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="js/kakao_base.js"></script>
+    <script src="data/team_assignments.js"></script>
     <script src="data/bank_1st.js"></script>
     <script src="data/bank_2nd.js"></script>
     <script>
+    // ========== teamAssignments 안전장치 (파일 로드 실패 시) ==========
+    if (typeof teamAssignments === 'undefined') {
+        console.warn('team_assignments.js 파일을 찾을 수 없습니다. 빈 객체로 초기화합니다.');
+        var teamAssignments = {};
+    }
+
     // ========== 모바일 드로어 토글 ==========
     (function(){
         var panel = document.getElementById('side-panel');
@@ -301,7 +342,6 @@
         try { localStorage.setItem(VISIT_STORAGE_KEY, JSON.stringify(data)); } catch(e){}
     }
     var visitData = loadVisitData();
-    // visitData[mid] = { planned: true/false, visited: true/false, visitDate: '2026-03-24' }
     function getVisit(mid){ return visitData[mid] || { planned:false, visited:false, visitDate:'' }; }
     function setVisit(mid, obj){
         if(!obj.planned && !obj.visited && !obj.visitDate){
@@ -379,24 +419,50 @@
         var box=el.querySelector('.bank-tooltip-box');
         if(!box)return;
         box.classList.remove('bounce-anim');
-        // reflow trigger
         void box.offsetWidth;
         box.classList.add('bounce-anim');
         setTimeout(function(){ box.classList.remove('bounce-anim'); }, 800);
     }
 
-    // ========== 라벨 빌드 (담당평가사 + 담당자 + 방문상태 포함) ==========
+    // ========== 팀원 매칭 함수 (IBK기업은행 점포 → 어느 팀원 담당?) ==========
+    function getTeamForBranch(props){
+        if((props['은행명']||'') !== 'IBK기업은행') return null;
+        var addr = (props['지번주소']||'') + ' ' + (props['도로명']||'');
+        for(var name in teamAssignments){
+            var info = teamAssignments[name];
+            if(!info.regions) continue;
+            for(var i=0; i<info.regions.length; i++){
+                if(addr.indexOf(info.regions[i]) !== -1) return name;
+            }
+        }
+        return null;
+    }
+    function matchesTeam(props, teamName){
+        if(teamName === 'all') return true;
+        if(teamName === 'unassigned'){
+            // IBK인데 어떤 팀원도 매칭 안 되는 경우
+            return (props['은행명']||'') === 'IBK기업은행' && getTeamForBranch(props) === null;
+        }
+        return getTeamForBranch(props) === teamName;
+    }
+
+    // ========== 라벨 빌드 (담당평가사 + 담당자 + 방문상태 + 팀원 포함) ==========
     function buildBankLabel(p){
         var b=p['은행명']||'',n=p['점포명']||'',c=getBankColor(b);if(!n)return'';
         var mid=getMid(p), mgr=getManager(mid), ev=p['담당평가사']||'';
         var v=getVisit(mid);
+        var teamName = getTeamForBranch(p);
+        var teamColor = teamName && teamAssignments[teamName] ? teamAssignments[teamName].color : null;
+
         var html='<div class="bank-tooltip-box" style="border-color:'+c+' !important;">'+
             '<div class="label-name">'+n+'</div>'+
             '<span class="label-bank" style="background:'+c+';">'+b+'</span>';
+        if(teamName && teamColor){
+            html+='<div class="label-team" style="background:'+teamColor+';">👤 '+teamName+'</div>';
+        }
         if(ev==='O') html+='<div class="label-eval eval-o">○ 접수이력</div>';
         else if(ev==='X') html+='<div class="label-eval eval-x">✗ 미접수</div>';
         if(mgr) html+='<div class="label-manager">👤 '+mgr+'</div>';
-        // 방문 뱃지
         if(v.planned || v.visited){
             html+='<div class="label-visit-badges">';
             if(v.planned) html+='<span class="label-visit-plan">📋 방문예정</span>';
@@ -428,8 +494,115 @@
     var allBanks=Object.keys(BANK_COLORS),bankVisible={},addrKeyword='',labelsVisible=true;
     var mgrFilter='all';
     var evalFilter='all';
-    var visitFilter='all'; // 'all' | 'plan' | 'done' | 'none'
+    var visitFilter='all';
+    var teamFilter='all';
     allBanks.forEach(function(b){bankVisible[b]=true;});
+
+    // ========== 팀원 칩 생성 ==========
+    (function buildTeamChips(){
+        var div = document.getElementById('team-filters');
+        var infoBar = document.getElementById('team-info-bar');
+
+        // "전체" 칩
+        var allChip = document.createElement('span');
+        allChip.className = 'team-chip active';
+        allChip.style.background = '#1a365d';
+        allChip.style.color = 'white';
+        allChip.innerHTML = '👥 전체';
+        allChip.dataset.team = '__all__';
+        allChip.onclick = function(){ window._setTeamFilter('all'); };
+        div.appendChild(allChip);
+
+        // 팀원별 칩
+        Object.keys(teamAssignments).forEach(function(name){
+            var info = teamAssignments[name];
+            var chip = document.createElement('span');
+            chip.className = 'team-chip';
+            chip.style.borderColor = info.color;
+            chip.style.color = info.color;
+            chip.dataset.team = name;
+            chip.innerHTML = '👤 ' + name + ' <span class="chip-count">0</span>';
+            chip.onclick = function(){ window._setTeamFilter(teamFilter === name ? 'all' : name); };
+            div.appendChild(chip);
+        });
+
+        // "미배정" 칩 (담당자 없는 IBK)
+        var noneChip = document.createElement('span');
+        noneChip.className = 'team-chip';
+        noneChip.style.borderColor = '#a0aec0';
+        noneChip.style.color = '#718096';
+        noneChip.dataset.team = 'unassigned';
+        noneChip.innerHTML = '❔ 미배정 <span class="chip-count">0</span>';
+        noneChip.onclick = function(){ window._setTeamFilter(teamFilter === 'unassigned' ? 'all' : 'unassigned'); };
+        div.appendChild(noneChip);
+
+        function setTeamFilter(val){
+            teamFilter = val;
+            // 모든 칩 비활성화
+            document.querySelectorAll('#team-filters .team-chip').forEach(function(c){
+                c.classList.remove('active');
+                var t = c.dataset.team;
+                if(t === '__all__'){
+                    c.style.background = 'white';
+                    c.style.color = '#1a365d';
+                } else if(t === 'unassigned'){
+                    c.style.background = 'white';
+                    c.style.color = '#718096';
+                } else if(teamAssignments[t]){
+                    c.style.background = 'white';
+                    c.style.color = teamAssignments[t].color;
+                }
+            });
+
+            // 활성 칩 표시
+            if(val === 'all'){
+                allChip.classList.add('active');
+                allChip.style.background = '#1a365d';
+                allChip.style.color = 'white';
+                infoBar.classList.remove('visible');
+            } else if(val === 'unassigned'){
+                noneChip.classList.add('active');
+                noneChip.style.background = '#718096';
+                noneChip.style.color = 'white';
+                infoBar.classList.add('visible');
+                infoBar.innerHTML = '<b>❔ 미배정</b> IBK기업은행 점포 (팀원 배정 필요)';
+            } else if(teamAssignments[val]){
+                var activeChip = document.querySelector('[data-team="'+val+'"]');
+                var info = teamAssignments[val];
+                if(activeChip){
+                    activeChip.classList.add('active');
+                    activeChip.style.background = info.color;
+                    activeChip.style.color = 'white';
+                }
+                infoBar.classList.add('visible');
+                infoBar.innerHTML = '<b>👤 '+val+'</b> 담당지역: ' + (info.regions||[]).join(', ') +
+                                    (info.note ? ' <span style="color:#718096;">('+info.note+')</span>' : '');
+            }
+            applyFilters();
+        }
+        window._setTeamFilter = setTeamFilter;
+    })();
+
+    // ========== 팀원별 카운트 업데이트 ==========
+    function updateTeamChipCounts(){
+        var unassignedCnt = 0;
+        var teamCounts = {};
+        Object.keys(teamAssignments).forEach(function(n){ teamCounts[n] = 0; });
+
+        allMarkers.forEach(function(m){
+            if((m._props['은행명']||'') !== 'IBK기업은행') return;
+            var t = getTeamForBranch(m._props);
+            if(t && teamCounts.hasOwnProperty(t)) teamCounts[t]++;
+            else if(!t) unassignedCnt++;
+        });
+
+        Object.keys(teamCounts).forEach(function(name){
+            var chip = document.querySelector('[data-team="'+name+'"] .chip-count');
+            if(chip) chip.textContent = teamCounts[name];
+        });
+        var noneChipCount = document.querySelector('[data-team="unassigned"] .chip-count');
+        if(noneChipCount) noneChipCount.textContent = unassignedCnt;
+    }
 
     // 담당평가사 필터 버튼 이벤트
     (function(){
@@ -510,6 +683,15 @@
             pointToLayer:function(f,ll){
                 var b=f.properties['은행명']||'',c=getBankColor(b);
                 var m=L.circleMarker(ll,{radius:6,fillColor:c,color:'#fff',weight:1.5,fillOpacity:0.85});
+
+                // IBK기업은행이면 팀원 색상으로 테두리 강조
+                if(b === 'IBK기업은행'){
+                    var tName = getTeamForBranch(f.properties);
+                    if(tName && teamAssignments[tName]){
+                        m.setStyle({ color: teamAssignments[tName].color, weight: 3, radius: 7 });
+                    }
+                }
+
                 m._bankName=b;m._props=f.properties;allMarkers.push(m);
                 markerByMid[getMid(f.properties)]=m;
                 return m;
@@ -517,15 +699,23 @@
             onEachFeature:function(f,layer){
                 var p=f.properties,c=getBankColor(p['은행명']||''),mid=getMid(p);
 
-                // 팝업: 마커 클릭 시 담당자 + 방문 편집 가능
                 layer.on('click',function(){
                     var curMgr=getManager(mid), ev=p['담당평가사']||'';
                     var curVisit=getVisit(mid);
+                    var teamName = getTeamForBranch(p);
+                    var teamColor = teamName && teamAssignments[teamName] ? teamAssignments[teamName].color : null;
+
+                    var teamHtml='';
+                    if(teamName){
+                        teamHtml='<div class="info-row"><b>담당팀원</b> <span style="color:'+teamColor+';font-weight:700;">👤 '+teamName+'</span></div>';
+                    }
                     var evalHtml='';
                     if(ev==='O') evalHtml='<div class="info-row"><b>접수이력</b> <span style="color:#38a169;font-weight:700;">○ 접수이력 있음</span></div>';
                     else if(ev==='X') evalHtml='<div class="info-row"><b>접수이력</b> <span style="color:#e53e3e;font-weight:700;">✗ 접수이력 없음</span></div>';
+
                     var popupHtml='<div class="popup-inner"><div class="bank-tag" style="background:'+c+';">'+(p['은행명']||'')+'</div>'+
                         '<div class="name">'+(p['점포명']||'')+'</div>'+
+                        teamHtml+
                         '<div class="info-row"><b>지번</b> '+(p['지번주소']||'-')+'</div>'+
                         '<div class="info-row"><b>도로명</b> '+(p['도로명']||'-')+'</div>'+
                         '<div class="info-row"><b>전화</b> '+(p['전화번호']||'-')+'</div>'+
@@ -557,7 +747,6 @@
                         var dateInp=document.querySelector('.visit-date-input');
                         if(!inp||!btn) return;
 
-                        // 담당자 저장
                         function doSaveMgr(){
                             var val=inp.value.trim();
                             setManager(mid, val);
@@ -569,7 +758,6 @@
                         btn.onclick=doSaveMgr;
                         inp.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();doSaveMgr();}});
 
-                        // 방문예정 체크
                         if(planChk){
                             planChk.onchange=function(){
                                 var v=getVisit(mid);
@@ -579,13 +767,11 @@
                                 updateList();
                             };
                         }
-                        // 방문완료 체크
                         if(doneChk){
                             doneChk.onchange=function(){
                                 var v=getVisit(mid);
                                 v.visited=this.checked;
                                 if(this.checked && !v.visitDate){
-                                    // 자동으로 오늘 날짜 세팅
                                     var today=new Date().toISOString().slice(0,10);
                                     v.visitDate=today;
                                     if(dateInp) dateInp.value=today;
@@ -596,7 +782,6 @@
                                 updateList();
                             };
                         }
-                        // 방문일 변경
                         if(dateInp){
                             dateInp.onchange=function(){
                                 var v=getVisit(mid);
@@ -633,8 +818,13 @@
             var mid=getMid(m._props||{}), mgr=getManager(mid), ev=m._props['담당평가사']||'';
             var mgrLow=mgr.toLowerCase();
             var v=getVisit(mid);
+
             // 은행 필터 + 텍스트 검색
             var ok=bankVisible[b]!==false&&(!addrKeyword||a.indexOf(addrKeyword)!==-1||r.indexOf(addrKeyword)!==-1||n.indexOf(addrKeyword)!==-1||mgrLow.indexOf(addrKeyword)!==-1);
+
+            // 팀원 필터
+            if(ok) ok = matchesTeam(m._props, teamFilter);
+
             // 담당평가사 필터
             if(ok && evalFilter==='o') ok=(ev==='O');
             if(ok && evalFilter==='x') ok=(ev==='X');
@@ -650,7 +840,9 @@
             else{if(map.hasLayer(m))map.removeLayer(m);if(connectorLines[mid]){map.removeLayer(connectorLines[mid]);delete connectorLines[mid];}}
         });
         document.getElementById('visible-count').textContent=cnt.toLocaleString();
-        updateList();setTimeout(updateAllConnectors,200);
+        updateList();
+        updateTeamChipCounts();
+        setTimeout(updateAllConnectors,200);
     }
 
     // ========== 사이드 목록 ==========
@@ -664,6 +856,14 @@
             var m=items[i],p=m._props,col=getBankColor(p['은행명']||'');
             var mid=getMid(p),mgr=getManager(mid),ev=p['담당평가사']||'';
             var v=getVisit(mid);
+            var teamName = getTeamForBranch(p);
+            var teamColor = teamName && teamAssignments[teamName] ? teamAssignments[teamName].color : null;
+
+            var teamBadge = '';
+            if(teamName){
+                teamBadge = '<span style="background:'+teamColor+';color:white;padding:1px 6px;border-radius:3px;font-size:9px;font-weight:700;margin-left:6px;">👤 '+teamName+'</span>';
+            }
+
             var evalBadge='';
             if(ev==='O') evalBadge='<span style="color:#38a169;font-weight:700;font-size:10px;margin-left:6px;">○ 접수이력</span>';
             else if(ev==='X') evalBadge='<span style="color:#e53e3e;font-weight:700;font-size:10px;margin-left:6px;">✗ 미접수</span>';
@@ -675,7 +875,7 @@
                 visitBadges+='</div>';
             }
             html+='<div class="list-item" onclick="focusMarker('+m._leaflet_id+')">'+
-                '<span class="bank-badge" style="background:'+col+';">'+(p['은행명']||'')+'</span>'+evalBadge+
+                '<span class="bank-badge" style="background:'+col+';">'+(p['은행명']||'')+'</span>'+teamBadge+evalBadge+
                 '<div class="name">'+(p['점포명']||'')+'</div>'+
                 '<div class="addr">'+(p['지번주소']||p['도로명']||'')+'</div>'+
                 (mgr?'<div class="manager">👤 '+mgr+'</div>':'')+
