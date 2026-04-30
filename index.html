@@ -73,6 +73,143 @@
         .list-item .note-preview { font-size: 11px; color: #d97706; margin-top: 3px; padding: 2px 6px; background: #fef3c7; border-radius: 3px; display: inline-block; }
         .empty-state { padding: 40px 20px; text-align: center; color: #a0aec0; font-size: 13px; }
 
+        /* ===== 팀 캘린더 위젯 ===== */
+        .calendar-section {
+            border-top: 2px solid #e2e8f0;
+            background: linear-gradient(180deg, #fff, #f7fafc);
+        }
+        .calendar-toggle {
+            padding: 11px 16px; cursor: pointer; user-select: none;
+            display: flex; justify-content: space-between; align-items: center;
+            background: #fff; border-bottom: 1px solid #edf2f7;
+            font-size: 13px; font-weight: 700; color: #2d3748;
+        }
+        .calendar-toggle:hover { background: #f7fafc; }
+        .calendar-toggle .arrow { font-size: 11px; color: #718096; transition: transform 0.2s; }
+        .calendar-toggle.expanded .arrow { transform: rotate(180deg); }
+        .calendar-body { display: none; padding: 10px 12px 12px; }
+        .calendar-body.visible { display: block; }
+        .cal-nav {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 8px; font-size: 13px; font-weight: 700; color: #2d3748;
+        }
+        .cal-nav button {
+            border: 1px solid #cbd5e0; background: white; cursor: pointer;
+            border-radius: 6px; padding: 3px 8px; font-size: 12px; color: #4a5568;
+        }
+        .cal-nav button:hover { background: #f0f7ff; }
+        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+        .cal-grid .dow {
+            text-align: center; font-size: 10px; font-weight: 700;
+            color: #a0aec0; padding: 4px 0;
+        }
+        .cal-grid .dow.sun { color: #e53e3e; }
+        .cal-grid .dow.sat { color: #2b6cb0; }
+        .cal-day {
+            aspect-ratio: 1; display: flex; flex-direction: column; align-items: center;
+            justify-content: flex-start; padding-top: 2px; font-size: 11px; cursor: pointer;
+            border-radius: 4px; position: relative; color: #2d3748;
+            transition: background 0.15s;
+        }
+        .cal-day:hover { background: #e6f0ff; }
+        .cal-day.other { color: #cbd5e0; }
+        .cal-day.today { font-weight: 800; color: #2b6cb0; }
+        .cal-day.today::before {
+            content: ''; position: absolute; inset: 1px;
+            border: 1.5px solid #2b6cb0; border-radius: 4px; pointer-events: none;
+        }
+        .cal-day.selected { background: #2b6cb0; color: white !important; font-weight: 700; }
+        .cal-day.selected::before { border-color: transparent; }
+        .cal-day.sun { color: #e53e3e; }
+        .cal-day.sat { color: #2b6cb0; }
+        .cal-day .dots {
+            display: flex; gap: 2px; margin-top: 1px; flex-wrap: wrap; justify-content: center;
+            max-width: 100%; line-height: 1;
+        }
+        .cal-day .dots .dot {
+            width: 4px; height: 4px; border-radius: 50%; display: inline-block;
+        }
+        .cal-day.selected .dots .dot { background: white !important; }
+        .cal-events { margin-top: 10px; padding-top: 10px; border-top: 1px solid #edf2f7; }
+        .cal-events h4 {
+            font-size: 11px; font-weight: 700; color: #4a5568; margin-bottom: 6px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .cal-events h4 .add-btn {
+            background: #0051af; color: white; border: none; border-radius: 4px;
+            padding: 2px 8px; font-size: 11px; font-weight: 700; cursor: pointer;
+        }
+        .cal-events h4 .add-btn:hover { background: #003D7A; }
+        .cal-event-item {
+            display: flex; align-items: flex-start; gap: 6px;
+            padding: 6px 8px; margin-bottom: 4px;
+            background: white; border: 1px solid #edf2f7; border-radius: 6px;
+            cursor: pointer; transition: background 0.15s;
+        }
+        .cal-event-item:hover { background: #f0f7ff; }
+        .cal-event-item .ev-color {
+            width: 4px; flex-shrink: 0; align-self: stretch; border-radius: 2px;
+            margin-top: 2px; margin-bottom: 2px;
+        }
+        .cal-event-item .ev-content { flex: 1; min-width: 0; }
+        .cal-event-item .ev-time { font-size: 10px; color: #718096; font-weight: 600; }
+        .cal-event-item .ev-title { font-size: 12px; font-weight: 700; color: #2d3748; word-break: break-word; }
+        .cal-event-item .ev-meta { font-size: 10px; color: #718096; margin-top: 1px; word-break: break-word; }
+        .cal-events-empty {
+            text-align: center; color: #a0aec0; font-size: 11px; padding: 12px;
+            font-style: italic;
+        }
+
+        /* ===== 일정 모달 ===== */
+        .cal-modal-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.5); z-index: 5000;
+            align-items: center; justify-content: center;
+        }
+        .cal-modal-overlay.visible { display: flex; }
+        .cal-modal {
+            background: white; border-radius: 12px; padding: 20px;
+            width: 90%; max-width: 380px; max-height: 90vh; overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .cal-modal h3 {
+            font-size: 16px; font-weight: 700; color: #1a202c;
+            margin-bottom: 14px;
+        }
+        .cal-modal .field { margin-bottom: 10px; }
+        .cal-modal label {
+            display: block; font-size: 11px; font-weight: 600;
+            color: #718096; margin-bottom: 4px;
+        }
+        .cal-modal input[type="text"],
+        .cal-modal input[type="date"],
+        .cal-modal input[type="time"],
+        .cal-modal select,
+        .cal-modal textarea {
+            width: 100%; padding: 7px 10px; border: 1.5px solid #e2e8f0;
+            border-radius: 6px; font-size: 13px; outline: none; font-family: inherit;
+        }
+        .cal-modal input:focus, .cal-modal select:focus, .cal-modal textarea:focus { border-color: #0051af; }
+        .cal-modal textarea { resize: vertical; min-height: 60px; }
+        .cal-modal .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .cal-modal .checkbox-row { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+        .cal-modal .checkbox-row input { width: 16px; height: 16px; }
+        .cal-modal-actions {
+            display: flex; gap: 8px; margin-top: 14px; padding-top: 12px;
+            border-top: 1px solid #edf2f7;
+        }
+        .cal-modal-actions button {
+            flex: 1; padding: 8px; border: none; border-radius: 6px;
+            font-size: 13px; font-weight: 700; cursor: pointer;
+        }
+        .cal-modal-actions .btn-save { background: #0051af; color: white; }
+        .cal-modal-actions .btn-save:hover { background: #003D7A; }
+        .cal-modal-actions .btn-save:disabled { background: #cbd5e0; cursor: not-allowed; }
+        .cal-modal-actions .btn-delete { background: #fee2e2; color: #dc2626; }
+        .cal-modal-actions .btn-delete:hover { background: #fecaca; }
+        .cal-modal-actions .btn-cancel { background: #edf2f7; color: #4a5568; }
+        .cal-modal-actions .btn-cancel:hover { background: #e2e8f0; }
+
         /* ===== 팝업 (공통) ===== */
         .leaflet-popup-content-wrapper {
             border-radius: 10px !important; border: none !important;
@@ -248,6 +385,76 @@
         </div>
 
         <div id="list-container"><div class="empty-state">데이터 로드 중…</div></div>
+
+        <!-- 팀 캘린더 위젯 -->
+        <div class="calendar-section">
+            <div class="calendar-toggle" id="calendar-toggle">
+                <span>📅 팀 캘린더</span>
+                <span class="arrow">▼</span>
+            </div>
+            <div class="calendar-body" id="calendar-body">
+                <div class="cal-nav">
+                    <button id="cal-prev">‹</button>
+                    <span id="cal-title">- 년 -월</span>
+                    <button id="cal-next">›</button>
+                </div>
+                <div class="cal-grid" id="cal-grid"></div>
+                <div class="cal-events">
+                    <h4>
+                        <span id="cal-events-date">선택일</span>
+                        <button class="add-btn" id="cal-add-btn">+ 추가</button>
+                    </h4>
+                    <div id="cal-events-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 일정 추가/수정 모달 -->
+    <div class="cal-modal-overlay" id="cal-modal">
+        <div class="cal-modal">
+            <h3 id="cal-modal-title">일정 추가</h3>
+            <div class="field">
+                <label>제목 *</label>
+                <input type="text" id="cal-f-title" placeholder="일정 제목">
+            </div>
+            <div class="field">
+                <label>담당자</label>
+                <select id="cal-f-member">
+                    <option value="">- 담당자 선택 -</option>
+                </select>
+            </div>
+            <div class="field">
+                <label class="checkbox-row">
+                    <input type="checkbox" id="cal-f-allday">
+                    <span>종일 일정</span>
+                </label>
+            </div>
+            <div class="field">
+                <label>날짜</label>
+                <input type="date" id="cal-f-date">
+            </div>
+            <div class="field" id="cal-f-time-row">
+                <label>시간</label>
+                <div class="row2">
+                    <input type="time" id="cal-f-start" value="09:00">
+                    <input type="time" id="cal-f-end" value="10:00">
+                </div>
+            </div>
+            <div class="field">
+                <label>장소</label>
+                <input type="text" id="cal-f-location" placeholder="장소 (선택)">
+            </div>
+            <div class="field">
+                <label>메모</label>
+                <textarea id="cal-f-desc" placeholder="메모 (선택)"></textarea>
+            </div>
+            <div class="cal-modal-actions">
+                <button class="btn-cancel" id="cal-btn-cancel">취소</button>
+                <button class="btn-delete" id="cal-btn-delete" style="display:none;">삭제</button>
+                <button class="btn-save" id="cal-btn-save">저장</button>
+            </div>
+        </div>
     </div>
 
     <div id="panel-overlay"></div>
@@ -1049,6 +1256,298 @@
     }
     syncIbkFromServer();
     setInterval(syncIbkFromServer, 30000);
+
+    // ============================================================
+    // 팀 캘린더 위젯
+    // ============================================================
+    var TEAM_MEMBERS = ['김준식', '박종찬', '장민규', '김남솔', '최원준'];
+    // 담당자별 표시 색상 (구글 캘린더 colorId 와 매칭)
+    var MEMBER_HEX = {
+        '김준식': '#4285f4',  // 블루베리
+        '박종찬': '#0b8043',  // 바질
+        '장민규': '#f4511e',  // 귤
+        '김남솔': '#8e24aa',  // 포도
+        '최원준': '#d50000'   // 토마토
+    };
+
+    var calState = {
+        viewYear: new Date().getFullYear(),
+        viewMonth: new Date().getMonth(),  // 0-based
+        selectedDate: formatYMD(new Date()),
+        events: [],     // 현재 보고 있는 월의 events
+        editingId: null
+    };
+
+    function formatYMD(d){
+        var y = d.getFullYear();
+        var m = String(d.getMonth() + 1).padStart(2, '0');
+        var dd = String(d.getDate()).padStart(2, '0');
+        return y + '-' + m + '-' + dd;
+    }
+
+    // 토글
+    document.getElementById('calendar-toggle').onclick = function(){
+        var body = document.getElementById('calendar-body');
+        var toggle = document.getElementById('calendar-toggle');
+        var open = body.classList.toggle('visible');
+        toggle.classList.toggle('expanded', open);
+        if(open && !calState.events.length){
+            loadCalendarMonth();
+        }
+    };
+
+    // 월 이동
+    document.getElementById('cal-prev').onclick = function(){
+        calState.viewMonth--;
+        if(calState.viewMonth < 0){ calState.viewMonth = 11; calState.viewYear--; }
+        loadCalendarMonth();
+    };
+    document.getElementById('cal-next').onclick = function(){
+        calState.viewMonth++;
+        if(calState.viewMonth > 11){ calState.viewMonth = 0; calState.viewYear++; }
+        loadCalendarMonth();
+    };
+
+    // 한 달치 이벤트 로드
+    function loadCalendarMonth(){
+        var firstDay = new Date(calState.viewYear, calState.viewMonth, 1);
+        var lastDay = new Date(calState.viewYear, calState.viewMonth + 1, 0, 23, 59, 59);
+        // 그리드는 이전/다음 달도 일부 보여주므로 살짝 더 넓게 가져오기
+        var gridStart = new Date(firstDay); gridStart.setDate(gridStart.getDate() - 7);
+        var gridEnd = new Date(lastDay); gridEnd.setDate(gridEnd.getDate() + 7);
+
+        document.getElementById('cal-title').textContent = calState.viewYear + '년 ' + (calState.viewMonth + 1) + '월';
+        renderCalGrid();  // 일단 빈 그리드 그리기
+
+        apiCalLoad(formatYMD(gridStart), formatYMD(gridEnd))
+            .then(function(events){
+                calState.events = events;
+                renderCalGrid();
+                renderEventList();
+            })
+            .catch(function(err){
+                console.warn('캘린더 로드 실패', err);
+            });
+    }
+
+    function apiCalLoad(start, end){
+        var url = API_URL + '?token=' + encodeURIComponent(API_TOKEN) +
+                  '&action=cal_list&start=' + encodeURIComponent(start) + '&end=' + encodeURIComponent(end);
+        return fetch(url).then(function(r){ return r.json(); }).then(function(res){
+            if(!res.ok) throw new Error(res.error || '캘린더 로드 실패');
+            return res.events || [];
+        });
+    }
+
+    // 그리드 렌더링
+    function renderCalGrid(){
+        var grid = document.getElementById('cal-grid');
+        var dows = ['일', '월', '화', '수', '목', '금', '토'];
+        var html = '';
+        dows.forEach(function(d, i){
+            var cls = i === 0 ? 'sun' : (i === 6 ? 'sat' : '');
+            html += '<div class="dow ' + cls + '">' + d + '</div>';
+        });
+
+        var firstDay = new Date(calState.viewYear, calState.viewMonth, 1);
+        var lastDay = new Date(calState.viewYear, calState.viewMonth + 1, 0);
+        var startDow = firstDay.getDay();  // 0=일
+
+        // 이전 달 채우기
+        var prevLast = new Date(calState.viewYear, calState.viewMonth, 0).getDate();
+        for(var i = startDow - 1; i >= 0; i--){
+            var d = prevLast - i;
+            html += '<div class="cal-day other">' + d + '</div>';
+        }
+
+        // 이번 달
+        var todayYMD = formatYMD(new Date());
+        for(var d = 1; d <= lastDay.getDate(); d++){
+            var dt = new Date(calState.viewYear, calState.viewMonth, d);
+            var ymd = formatYMD(dt);
+            var dow = dt.getDay();
+            var dowCls = dow === 0 ? 'sun' : (dow === 6 ? 'sat' : '');
+            var todayCls = ymd === todayYMD ? 'today' : '';
+            var selCls = ymd === calState.selectedDate ? 'selected' : '';
+            // 이 날짜의 이벤트 색상 점들 (담당자별)
+            var dayEvents = calState.events.filter(function(e){ return e.date === ymd; });
+            var membersInDay = {};
+            dayEvents.forEach(function(e){
+                var m = e.member || '_';
+                membersInDay[m] = (MEMBER_HEX[m] || '#a0aec0');
+            });
+            var dotsHtml = '';
+            var memList = Object.keys(membersInDay).slice(0, 4);
+            memList.forEach(function(m){
+                dotsHtml += '<span class="dot" style="background:' + membersInDay[m] + ';"></span>';
+            });
+            if(Object.keys(membersInDay).length > 4) dotsHtml += '<span class="dot" style="background:#cbd5e0;"></span>';
+
+            html += '<div class="cal-day ' + dowCls + ' ' + todayCls + ' ' + selCls + '" data-ymd="' + ymd + '">' +
+                d + '<div class="dots">' + dotsHtml + '</div></div>';
+        }
+
+        // 다음 달 채우기 (총 6주 = 42칸 맞추기)
+        var totalCells = startDow + lastDay.getDate();
+        var trailing = (7 - (totalCells % 7)) % 7;
+        for(var i = 1; i <= trailing; i++){
+            html += '<div class="cal-day other">' + i + '</div>';
+        }
+
+        grid.innerHTML = html;
+
+        // 셀 클릭 → 선택일 변경
+        grid.querySelectorAll('.cal-day[data-ymd]').forEach(function(el){
+            el.onclick = function(){
+                calState.selectedDate = this.dataset.ymd;
+                renderCalGrid();
+                renderEventList();
+            };
+        });
+    }
+
+    // 선택일 이벤트 리스트
+    function renderEventList(){
+        var list = document.getElementById('cal-events-list');
+        var dateLbl = document.getElementById('cal-events-date');
+        var d = calState.selectedDate;
+        var parts = d.split('-');
+        dateLbl.textContent = Number(parts[1]) + '월 ' + Number(parts[2]) + '일';
+
+        var dayEvents = calState.events.filter(function(e){ return e.date === d; });
+        // 시간순 정렬
+        dayEvents.sort(function(a, b){
+            if(a.allDay && !b.allDay) return -1;
+            if(!a.allDay && b.allDay) return 1;
+            return (a.startTime || '').localeCompare(b.startTime || '');
+        });
+
+        if(!dayEvents.length){
+            list.innerHTML = '<div class="cal-events-empty">일정 없음</div>';
+            return;
+        }
+
+        var html = '';
+        dayEvents.forEach(function(e){
+            var color = MEMBER_HEX[e.member] || '#a0aec0';
+            var timeStr = e.allDay ? '🌐 종일' : (e.startTime + (e.endTime ? ' - ' + e.endTime : ''));
+            html += '<div class="cal-event-item" data-id="' + escAttr(e.id) + '">' +
+                '<div class="ev-color" style="background:' + color + ';"></div>' +
+                '<div class="ev-content">' +
+                    '<div class="ev-time">' + timeStr + (e.member ? ' · ' + escHtml(e.member) : '') + '</div>' +
+                    '<div class="ev-title">' + escHtml(e.title) + '</div>' +
+                    (e.location ? '<div class="ev-meta">📍 ' + escHtml(e.location) + '</div>' : '') +
+                    (e.description ? '<div class="ev-meta">📝 ' + escHtml(e.description.substring(0, 60)) + (e.description.length > 60 ? '…' : '') + '</div>' : '') +
+                '</div>' +
+            '</div>';
+        });
+        list.innerHTML = html;
+
+        // 이벤트 클릭 → 수정 모달
+        list.querySelectorAll('.cal-event-item').forEach(function(el){
+            el.onclick = function(){
+                var id = this.dataset.id;
+                var ev = dayEvents.find(function(e){ return e.id === id; });
+                if(ev) openCalModal(ev);
+            };
+        });
+    }
+
+    // ========== 모달 ==========
+    var modal = document.getElementById('cal-modal');
+    var memberSel = document.getElementById('cal-f-member');
+    TEAM_MEMBERS.forEach(function(m){
+        var opt = document.createElement('option');
+        opt.value = m; opt.textContent = m;
+        memberSel.appendChild(opt);
+    });
+
+    document.getElementById('cal-add-btn').onclick = function(){
+        openCalModal(null);
+    };
+    document.getElementById('cal-btn-cancel').onclick = closeCalModal;
+    document.getElementById('cal-f-allday').onchange = function(){
+        document.getElementById('cal-f-time-row').style.display = this.checked ? 'none' : '';
+    };
+
+    function openCalModal(event){
+        calState.editingId = event ? event.id : null;
+        document.getElementById('cal-modal-title').textContent = event ? '일정 수정' : '일정 추가';
+        document.getElementById('cal-btn-delete').style.display = event ? '' : 'none';
+        document.getElementById('cal-f-title').value = event ? event.title : '';
+        document.getElementById('cal-f-member').value = event ? (event.member || '') : '';
+        document.getElementById('cal-f-allday').checked = event ? !!event.allDay : false;
+        document.getElementById('cal-f-time-row').style.display = (event && event.allDay) ? 'none' : '';
+        document.getElementById('cal-f-date').value = event ? event.date : calState.selectedDate;
+        document.getElementById('cal-f-start').value = event && event.startTime ? event.startTime : '09:00';
+        document.getElementById('cal-f-end').value = event && event.endTime ? event.endTime : '10:00';
+        document.getElementById('cal-f-location').value = event ? (event.location || '') : '';
+        document.getElementById('cal-f-desc').value = event ? (event.description || '') : '';
+        modal.classList.add('visible');
+    }
+    function closeCalModal(){
+        modal.classList.remove('visible');
+        calState.editingId = null;
+    }
+
+    document.getElementById('cal-btn-save').onclick = function(){
+        var btn = this;
+        var payload = {
+            action: calState.editingId ? 'cal_update' : 'cal_add',
+            title: document.getElementById('cal-f-title').value.trim() || '(제목 없음)',
+            member: document.getElementById('cal-f-member').value,
+            allDay: document.getElementById('cal-f-allday').checked,
+            date: document.getElementById('cal-f-date').value,
+            startTime: document.getElementById('cal-f-start').value,
+            endTime: document.getElementById('cal-f-end').value,
+            location: document.getElementById('cal-f-location').value,
+            description: document.getElementById('cal-f-desc').value
+        };
+        if(!payload.date){ alert('날짜를 입력하세요'); return; }
+        if(calState.editingId) payload.id = calState.editingId;
+
+        btn.disabled = true; btn.textContent = '저장 중…';
+        apiSave(payload).then(function(){
+            closeCalModal();
+            calState.selectedDate = payload.date;
+            // 선택일이 다른 달이면 그쪽으로 이동
+            var newD = new Date(payload.date);
+            calState.viewYear = newD.getFullYear();
+            calState.viewMonth = newD.getMonth();
+            loadCalendarMonth();
+            btn.disabled = false; btn.textContent = '저장';
+        }).catch(function(err){
+            alert('저장 실패: ' + err.message);
+            btn.disabled = false; btn.textContent = '저장';
+        });
+    };
+
+    document.getElementById('cal-btn-delete').onclick = function(){
+        if(!calState.editingId) return;
+        if(!confirm('이 일정을 삭제하시겠습니까?')) return;
+        var btn = this;
+        btn.disabled = true; btn.textContent = '삭제 중…';
+        apiSave({ action: 'cal_delete', id: calState.editingId }).then(function(){
+            closeCalModal();
+            loadCalendarMonth();
+            btn.disabled = false; btn.textContent = '삭제';
+        }).catch(function(err){
+            alert('삭제 실패: ' + err.message);
+            btn.disabled = false; btn.textContent = '삭제';
+        });
+    };
+
+    // 모달 바깥 클릭으로 닫기
+    modal.addEventListener('click', function(e){
+        if(e.target === modal) closeCalModal();
+    });
+
+    // 30초마다 캘린더도 자동 새로고침 (위젯 열려있을 때만)
+    setInterval(function(){
+        if(document.getElementById('calendar-body').classList.contains('visible')){
+            loadCalendarMonth();
+        }
+    }, 30000);
     </script>
 </body>
 </html>
