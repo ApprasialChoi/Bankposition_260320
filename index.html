@@ -265,7 +265,7 @@
     // ============================================================
     // 설정 (IBK 전용 Apps Script)
     // ============================================================
-    var API_URL = 'https://script.google.com/macros/s/AKfycbwhXSrlElhN59TrRtxCEDuVUx0snWPMPyrdCH7j3yYUNLCAlcWY8m6lu1hJIRrPZ1l0/exec';
+    var API_URL = 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec';
     var API_TOKEN = 'IBK15520!';
 
     function setSync(state, msg){
@@ -817,18 +817,20 @@
 
     // ============================================================
     // 1년 이내 접수이력 없음 판정
+    //  - 1년 이내에 정감자(appraiser)가 채워진 이력이 하나라도 있어야 not stale
+    //  - 정감 안 된 의뢰 (year/month 만 있고 appraiser 비어있음) 는 유효 이력으로 인정 안 함
+    //  - history 자체가 없으면 stale
     // ============================================================
     function isStale(b){
-        // history 가 없거나 (정감이력 자체가 없음) 모든 이력이 1년 초과면 stale
         if(!b.history || !b.history.length) return true;
         var now = new Date();
         var oneYearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
-        // 가장 최근 이력 찾기 (year, month 기준)
         for(var i = 0; i < b.history.length; i++){
             var h = b.history[i];
             if(!h.year || !h.month) continue;
+            if(!h.appraiser || !String(h.appraiser).trim()) continue;  // 정감자 없는 행은 무시
             var d = new Date(Number(h.year), Number(h.month) - 1, 1);
-            if(d >= oneYearAgo) return false;  // 최근 1년 내 이력이 하나라도 있으면 not stale
+            if(d >= oneYearAgo) return false;  // 1년 내 + 정감자 있음 → not stale
         }
         return true;
     }
