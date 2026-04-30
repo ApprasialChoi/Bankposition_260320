@@ -17,228 +17,181 @@
         #kakao-map { z-index: 0; }
         #map { z-index: 1; background: transparent; }
 
-        /* ===== 사이드 패널 (데스크탑) ===== */
+        /* ===== 사이드 패널 ===== */
         #side-panel {
             position: fixed; top: 0; left: 0; width: 320px; height: 100%;
             background: #fff; z-index: 3000; display: flex; flex-direction: column;
             box-shadow: 2px 0 12px rgba(0,0,0,0.08);
         }
-        .panel-header { padding: 20px; background: linear-gradient(135deg, #1a365d, #2b6cb0); color: white; }
-        .panel-header h1 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
-        .panel-header .subtitle { font-size: 11px; opacity: 0.8; }
+        .panel-header { padding: 18px 20px; background: linear-gradient(135deg, #1a365d, #2b6cb0); color: white; }
+        .panel-header h1 { font-size: 17px; font-weight: 700; margin-bottom: 3px; }
+        .panel-header .subtitle { font-size: 11px; opacity: 0.85; }
         .panel-count { font-size: 13px; margin-top: 8px; font-weight: 600; }
         .panel-count span { color: #fbd38d; }
         .sync-status { font-size: 10px; margin-top: 4px; opacity: 0.85; }
         .sync-status.ok { color: #9ae6b4; }
         .sync-status.err { color: #feb2b2; }
         .sync-status.pending { color: #fbd38d; }
+
         .filter-section { padding: 12px 16px; border-bottom: 1px solid #edf2f7; }
         .filter-section label { font-size: 11px; font-weight: 600; color: #718096; display: block; margin-bottom: 6px; }
         .filter-row { display: flex; flex-wrap: wrap; gap: 4px; }
-        .bank-chip {
-            padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;
-            cursor: pointer; border: 1.5px solid #e2e8f0; background: white; transition: all 0.15s; user-select: none;
-        }
-        .bank-chip.active { color: white; border-color: transparent; }
-        .bank-chip:hover { transform: scale(1.05); }
-        .search-input {
-            width: 100%; padding: 8px 12px; border: 1.5px solid #e2e8f0; border-radius: 8px;
-            font-size: 12px; outline: none; margin-top: 8px;
-        }
-        .search-input:focus { border-color: #2b6cb0; }
-        #list-container { flex: 1; overflow-y: auto; }
-        .list-item { padding: 12px 16px; border-bottom: 1px solid #f7fafc; cursor: pointer; transition: background 0.15s; }
-        .list-item:hover { background: #f0f7ff; }
-        .list-item .bank-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; color: white; margin-bottom: 4px; }
-        .list-item .name { font-size: 14px; font-weight: 700; color: #2d3748; }
-        .list-item .addr { font-size: 11px; color: #a0aec0; margin-top: 3px; }
-        .list-item .phone { font-size: 11px; color: #718096; margin-top: 2px; }
-        .list-item .manager { font-size: 11px; color: #2b6cb0; margin-top: 2px; font-weight: 600; }
-        .list-item .visit-badges { margin-top: 4px; display: flex; gap: 4px; flex-wrap: wrap; }
-        .list-item .visit-badge-plan { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 9px; font-weight: 700; background: #fef3c7; color: #d97706; border: 1px solid #fbbf24; }
-        .list-item .visit-badge-done { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 9px; font-weight: 700; background: #d1fae5; color: #059669; border: 1px solid #34d399; }
-
-        /* ===== 팀원 필터 칩 ===== */
-        .team-chip {
+        .chip {
             padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;
             cursor: pointer; border: 1.5px solid #e2e8f0; background: white;
             transition: all 0.15s; user-select: none;
-            display: inline-flex; align-items: center; gap: 4px;
         }
-        .team-chip:hover { transform: scale(1.05); }
-        .team-chip.active { color: white !important; border-color: transparent; }
-        .team-chip .chip-count {
-            background: #edf2f7; color: #4a5568;
-            padding: 1px 6px; border-radius: 10px; font-size: 10px; font-weight: 700;
+        .chip.active { color: white; border-color: transparent; }
+        .chip:hover { transform: scale(1.04); }
+        .search-input {
+            width: 100%; padding: 8px 12px; border: 1.5px solid #e2e8f0; border-radius: 8px;
+            font-size: 12px; outline: none; margin-top: 8px; font-family: inherit;
         }
-        .team-chip.active .chip-count {
-            background: rgba(255,255,255,0.3); color: white;
-        }
-        .team-info-bar {
-            background: #f0f7ff; padding: 8px 12px; border-radius: 6px;
-            margin-top: 8px; font-size: 11px; color: #2b6cb0;
-            display: none; line-height: 1.5;
-        }
-        .team-info-bar.visible { display: block; }
-        .team-info-bar b { font-weight: 700; }
+        .search-input:focus { border-color: #2b6cb0; }
 
-        /* ===== 팝업 ===== */
-        .leaflet-popup-content-wrapper { border-radius: 12px !important; border: none !important; box-shadow: 0 4px 20px rgba(0,0,0,0.15) !important; }
-        .leaflet-popup-content { margin: 0 !important; width: 280px !important; }
-        .popup-inner { padding: 16px; }
-        .popup-inner .bank-tag { display: inline-block; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 700; color: white; margin-bottom: 8px; }
-        .popup-inner .name { font-size: 16px; font-weight: 800; color: #1a202c; margin-bottom: 8px; }
-        .popup-inner .info-row { font-size: 12px; color: #4a5568; margin-bottom: 4px; }
-        .popup-inner .info-row b { color: #2d3748; min-width: 50px; display: inline-block; }
-        .popup-inner .manager-edit {
-            display: flex; align-items: center; gap: 6px; margin-top: 8px;
-            padding-top: 8px; border-top: 1px solid #edf2f7;
+        /* IBK 섹션 강조 */
+        .ibk-section {
+            background: linear-gradient(180deg, #fafbff, #fff);
+            border-left: 3px solid #0051af;
+            padding: 12px 16px;
+            border-bottom: 1px solid #edf2f7;
         }
-        .popup-inner .manager-edit b { color: #2d3748; font-size: 12px; min-width: 50px; flex-shrink: 0; }
-        .popup-inner .manager-edit input {
-            flex: 1; padding: 4px 8px; border: 1.5px solid #e2e8f0; border-radius: 6px;
-            font-size: 12px; outline: none; font-family: inherit; min-width: 0;
+        .ibk-section .ibk-title {
+            font-size: 11px; font-weight: 700; color: #0051af;
+            text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;
         }
-        .popup-inner .manager-edit input:focus { border-color: #2b6cb0; }
-        .popup-inner .manager-edit .save-btn {
-            padding: 4px 10px; background: #2b6cb0; color: white; border: none;
-            border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; flex-shrink: 0;
-            transition: background 0.15s;
-        }
-        .popup-inner .manager-edit .save-btn:hover { background: #1a365d; }
+        .ibk-section label { font-size: 10px; font-weight: 600; color: #718096; display: block; margin-bottom: 4px; margin-top: 8px; }
+        .ibk-section label:first-of-type { margin-top: 0; }
 
-        /* ===== 팝업 방문 체크 영역 ===== */
-        .popup-inner .visit-section {
-            margin-top: 10px; padding-top: 10px; border-top: 1px solid #edf2f7;
-        }
-        .popup-inner .visit-row {
-            display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 12px;
-        }
-        .popup-inner .visit-row label {
-            display: flex; align-items: center; gap: 5px; cursor: pointer; font-weight: 600; color: #2d3748; user-select: none;
-        }
-        .popup-inner .visit-row input[type="checkbox"] {
-            width: 16px; height: 16px; accent-color: #2b6cb0; cursor: pointer; flex-shrink: 0;
-        }
-        .popup-inner .visit-row input[type="date"] {
-            padding: 3px 6px; border: 1.5px solid #e2e8f0; border-radius: 6px;
-            font-size: 11px; outline: none; font-family: inherit; color: #4a5568;
-        }
-        .popup-inner .visit-row input[type="date"]:focus { border-color: #2b6cb0; }
-        .popup-inner .visit-row .date-label { font-size: 11px; color: #718096; margin-left: 4px; }
-
+        #list-container { flex: 1; overflow-y: auto; }
+        .list-item { padding: 11px 16px; border-bottom: 1px solid #f7fafc; cursor: pointer; transition: background 0.15s; }
+        .list-item:hover { background: #f0f7ff; }
+        .list-item .bank-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; color: white; margin-bottom: 4px; }
+        .list-item .name { font-size: 14px; font-weight: 700; color: #2d3748; }
+        .list-item .meta { font-size: 11px; color: #718096; margin-top: 3px; }
+        .list-item .ibk-info { font-size: 11px; color: #0051af; margin-top: 2px; font-weight: 600; }
+        .list-item .note-preview { font-size: 11px; color: #d97706; margin-top: 3px; padding: 2px 6px; background: #fef3c7; border-radius: 3px; display: inline-block; }
         .empty-state { padding: 40px 20px; text-align: center; color: #a0aec0; font-size: 13px; }
 
+        /* ===== 팝업 (공통) ===== */
+        .leaflet-popup-content-wrapper {
+            border-radius: 10px !important; border: none !important;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.15) !important;
+        }
+        .leaflet-popup-content { margin: 0 !important; width: 280px !important; }
+        .popup-inner { padding: 14px 16px; }
+        .popup-inner .bank-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; color: white; margin-bottom: 6px; }
+        .popup-inner .branch-name { font-size: 16px; font-weight: 800; color: #1a202c; margin-bottom: 8px; }
+        .popup-inner .info-row { font-size: 12px; color: #4a5568; margin-bottom: 4px; }
+        .popup-inner .info-row b { color: #2d3748; min-width: 60px; display: inline-block; font-weight: 600; }
+
+        /* IBK 풀 팝업 전용 */
+        .leaflet-popup-content.ibk-popup-wrap { width: 320px !important; }
+        .popup-section { margin-top: 10px; padding-top: 10px; border-top: 1px solid #edf2f7; }
+        .popup-section h3 {
+            font-size: 11px; font-weight: 700; color: #0051af;
+            margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .history-table { width: 100%; font-size: 11px; border-collapse: collapse; margin-top: 4px; }
+        .history-table th, .history-table td { padding: 4px 6px; border-bottom: 1px solid #edf2f7; text-align: left; }
+        .history-table th { background: #f7fafc; color: #718096; font-weight: 600; font-size: 10px; }
+        .history-empty { font-size: 11px; color: #a0aec0; font-style: italic; }
+
+        .note-edit { display: flex; gap: 6px; margin-top: 4px; }
+        .note-edit textarea {
+            flex: 1; padding: 6px 8px; border: 1.5px solid #e2e8f0; border-radius: 6px;
+            font-size: 12px; outline: none; font-family: inherit; resize: vertical;
+            min-height: 32px; max-height: 80px;
+        }
+        .note-edit textarea:focus { border-color: #0051af; }
+        .note-edit .save-btn {
+            padding: 4px 10px; background: #0051af; color: white; border: none;
+            border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer;
+            flex-shrink: 0; align-self: flex-start; transition: background 0.15s;
+        }
+        .note-edit .save-btn:hover { background: #003D7A; }
+        .note-edit .save-btn:disabled { background: #cbd5e0; cursor: not-allowed; }
+        .note-edit .save-btn.saved { background: #38a169; }
+        .visit-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; font-size: 12px; }
+        .visit-row b { color: #2d3748; font-weight: 600; min-width: 60px; }
+        .visit-row input[type="date"] {
+            padding: 4px 6px; border: 1.5px solid #e2e8f0; border-radius: 6px;
+            font-size: 11px; outline: none; font-family: inherit;
+        }
+        .visit-row input[type="date"]:focus { border-color: #0051af; }
+
         /* ===== 라벨 ===== */
-        .leaflet-tooltip.bank-label { background-color: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; display: block !important; }
+        .leaflet-tooltip.bank-label {
+            background: transparent !important; border: none !important;
+            box-shadow: none !important; padding: 0 !important;
+        }
         .leaflet-tooltip-top.bank-label:before { display: none !important; }
-        .bank-tooltip-box:empty { display: none !important; }
-        .bank-tooltip-box {
-            background-color: #ffffff !important; border: 2px solid #3388ff !important; border-radius: 6px !important;
-            padding: var(--label-padding, 4px 8px) !important; box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
-            text-align: center; min-width: var(--label-min-width, 60px); max-width: var(--label-max-width, 180px);
-            transform: scale(var(--label-scale, 1)); transform-origin: center bottom; transition: transform 0.15s ease;
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        .label-box {
+            background: #fff;
+            border: 2px solid #3388ff;
+            border-radius: 5px;
+            padding: var(--label-padding, 3px 7px);
+            text-align: center;
+            white-space: nowrap;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+            transform: scale(var(--label-scale, 1));
+            transform-origin: center bottom;
+            transition: transform 0.15s ease;
+            min-width: var(--label-min-width, 60px);
+            max-width: var(--label-max-width, 180px);
         }
-        .bank-tooltip-box .label-name { font-weight: bold !important; color: #1a202c !important; font-size: var(--label-font-main, 11px) !important; }
-        .bank-tooltip-box .label-bank { font-size: var(--label-font-sub, 9px) !important; color: #fff !important; padding: 1px 5px; border-radius: 3px; display: inline-block; margin-top: 2px; }
-        .bank-tooltip-box .label-manager { font-size: var(--label-font-sub, 9px) !important; color: #2b6cb0 !important; font-weight: 600; margin-top: 1px; }
-        .bank-tooltip-box .label-eval { font-size: var(--label-font-sub, 9px) !important; font-weight: 700; margin-top: 1px; display: inline-block; padding: 0 4px; border-radius: 3px; }
-        .bank-tooltip-box .label-eval.eval-o { color: #38a169 !important; background: #f0fff4; }
-        .bank-tooltip-box .label-eval.eval-x { color: #e53e3e !important; background: #fff5f5; }
-        .bank-tooltip-box .label-team {
-            font-size: var(--label-font-sub, 9px) !important; font-weight: 700;
-            margin-top: 2px; padding: 1px 5px; border-radius: 3px;
-            color: white !important; display: inline-block;
+        .label-box .lbl-name {
+            font-weight: 700;
+            color: #1a202c;
+            font-size: var(--label-font-main, 11px);
         }
-
-        /* ===== 라벨 방문 뱃지 ===== */
-        .bank-tooltip-box .label-visit-badges { margin-top: 2px; display: flex; gap: 3px; justify-content: center; flex-wrap: wrap; }
-        .bank-tooltip-box .label-visit-plan {
-            font-size: 8px !important; font-weight: 700; color: #d97706; background: #fef3c7;
-            padding: 0 4px; border-radius: 2px; border: 1px solid #fbbf24;
+        .label-box .lbl-bank {
+            font-size: var(--label-font-sub, 9px);
+            color: #fff;
+            padding: 1px 5px;
+            border-radius: 3px;
+            display: inline-block;
+            margin-top: 2px;
         }
-        .bank-tooltip-box .label-visit-done {
-            font-size: 8px !important; font-weight: 700; color: #059669; background: #d1fae5;
-            padding: 0 4px; border-radius: 2px; border: 1px solid #34d399;
-        }
-
-        /* ===== 라벨 바운스 애니메이션 ===== */
-        @keyframes labelBounceUp {
-            0%   { transform: scale(var(--label-scale,1)) translateY(0); }
-            20%  { transform: scale(var(--label-scale,1)) translateY(-18px); }
-            40%  { transform: scale(var(--label-scale,1)) translateY(-4px); }
-            55%  { transform: scale(var(--label-scale,1)) translateY(-12px); }
-            70%  { transform: scale(var(--label-scale,1)) translateY(-2px); }
-            85%  { transform: scale(var(--label-scale,1)) translateY(-6px); }
-            100% { transform: scale(var(--label-scale,1)) translateY(0); }
-        }
-        .bank-tooltip-box.bounce-anim {
-            animation: labelBounceUp 0.7s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
-        }
-
-        .leaflet-tooltip.draggable-tooltip { cursor: grab !important; }
-        .leaflet-tooltip.draggable-tooltip:active { cursor: grabbing !important; }
         .labels-hidden .bank-label { display: none !important; }
-        .label-toggle-ctrl { background: rgba(255,255,255,0.95); padding: 8px 10px; border-radius: 6px; box-shadow: 0 1px 5px rgba(0,0,0,0.3); font: 12px/1.3 sans-serif; }
-        .label-toggle-ctrl button { font-size: 10px; padding: 3px 8px; cursor: pointer; border: 1px solid #ddd; border-radius: 4px; background: #fff; margin-right: 4px; }
+
+        /* 컨트롤 */
+        .label-toggle-ctrl {
+            background: rgba(255,255,255,0.96); padding: 6px 8px; border-radius: 6px;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.2); font: 11px sans-serif;
+        }
+        .label-toggle-ctrl button {
+            font-size: 10px; padding: 3px 8px; cursor: pointer; border: 1px solid #ddd;
+            border-radius: 4px; background: #fff; margin-right: 3px;
+        }
         .label-toggle-ctrl button:hover { background: #f0f7ff; }
 
-        /* ===== 방문 필터 ===== */
-        .filter-section .filter-sub-label { font-size: 11px; font-weight: 600; color: #718096; margin-top: 8px; margin-bottom: 6px; display: block; }
-
-        /* ===== 모바일 토글 버튼 ===== */
-        #mobile-panel-toggle {
-            display: none;
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            z-index: 4000; background: linear-gradient(135deg, #1a365d, #2b6cb0);
-            color: white; border: none; border-radius: 30px; padding: 12px 24px;
-            font-size: 14px; font-weight: 700; cursor: pointer;
-            box-shadow: 0 4px 16px rgba(26,54,93,0.4);
-            transition: all 0.2s;
+        /* 모바일 */
+        #mobile-toggle {
+            display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            z-index: 4000; background: linear-gradient(135deg, #1a365d, #2b6cb0); color: white;
+            border: none; border-radius: 30px; padding: 11px 22px; font-size: 13px; font-weight: 700;
+            cursor: pointer; box-shadow: 0 4px 14px rgba(26,54,93,0.4);
         }
-        #mobile-panel-toggle:active { transform: translateX(-50%) scale(0.95); }
-        .drawer-handle {
-            display: none;
-            width: 40px; height: 4px; background: #cbd5e0; border-radius: 2px;
-            margin: 10px auto 6px;
-        }
-        #panel-overlay {
-            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.3); z-index: 2999;
-        }
+        .drawer-handle { display: none; width: 40px; height: 4px; background: #cbd5e0; border-radius: 2px; margin: 8px auto 4px; }
+        #panel-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 2999; }
 
         @media (max-width: 768px) {
-            #map, #kakao-map { left: 0; width: 100%; top: 0; bottom: 0; }
+            #map, #kakao-map { left: 0; width: 100%; }
             #side-panel {
                 position: fixed; top: auto; left: 0; right: 0; bottom: 0;
-                width: 100%; height: 55vh;
-                border-radius: 16px 16px 0 0;
+                width: 100%; height: 60vh; border-radius: 14px 14px 0 0;
                 box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
-                transform: translateY(100%);
-                transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+                transform: translateY(100%); transition: transform 0.3s ease;
             }
             #side-panel.open { transform: translateY(0); }
             .drawer-handle { display: block; }
-            .panel-header { padding: 6px 16px 12px; border-radius: 16px 16px 0 0; }
-            .panel-header h1 { font-size: 16px; }
-            .filter-section { padding: 10px 14px; }
-            .bank-chip, .team-chip { padding: 3px 8px; font-size: 10px; }
-            .search-input { font-size: 14px; padding: 10px 12px; }
-            .list-item { padding: 10px 14px; }
-            .list-item .name { font-size: 13px; }
-            #mobile-panel-toggle { display: block; }
-            #side-panel.open ~ #mobile-panel-toggle { display: none; }
+            .panel-header { padding: 6px 16px 12px; border-radius: 14px 14px 0 0; }
+            #mobile-toggle { display: block; }
+            #side-panel.open ~ #mobile-toggle { display: none; }
             #side-panel.open ~ #panel-overlay { display: block; }
-            .leaflet-popup-content { width: 240px !important; }
-            .popup-inner .name { font-size: 14px; }
-            .label-toggle-ctrl { font-size: 11px; }
-            .label-toggle-ctrl button { font-size: 9px; padding: 4px 8px; }
-        }
-        @media (max-width: 380px) {
-            #side-panel { height: 60vh; }
-            .panel-header h1 { font-size: 15px; }
-            .bank-chip, .team-chip { font-size: 9px; padding: 2px 6px; }
+            .leaflet-popup-content { width: 250px !important; }
+            .leaflet-popup-content.ibk-popup-wrap { width: 280px !important; }
         }
     </style>
 </head>
@@ -249,741 +202,659 @@
             <h1>🏦 은행 지점 지도</h1>
             <div class="subtitle">서울 · 인천 · 경기 은행 지점 현황</div>
             <div class="panel-count">표시 중: <span id="visible-count">0</span>건</div>
-            <div class="sync-status pending" id="sync-status">⏳ 서버 연결 중…</div>
+            <div class="sync-status pending" id="sync-status">⏳ IBK 서버 연결 중…</div>
         </div>
+
         <div class="filter-section">
-            <label>👥 팀원별 담당지역 (IBK기업은행)</label>
-            <div class="filter-row" id="team-filters"></div>
-            <div class="team-info-bar" id="team-info-bar"></div>
-
-            <label style="margin-top:12px;">은행 필터 (클릭으로 ON/OFF)</label>
+            <label>은행 필터 (클릭으로 ON/OFF)</label>
             <div class="filter-row" id="bank-filters"></div>
-
-            <label style="margin-top:8px;">담당평가사 필터 (신한은행)</label>
-            <div class="filter-row">
-                <span class="bank-chip active" id="eval-filter-all" style="background:#2b6cb0;border-color:#2b6cb0;">전체</span>
-                <span class="bank-chip" id="eval-filter-o" style="color:#38a169;border-color:#38a169;">○ 접수이력 있음</span>
-                <span class="bank-chip" id="eval-filter-x" style="color:#e53e3e;border-color:#e53e3e;">✗ 접수이력 없음</span>
-            </div>
-            <label style="margin-top:8px;">담당자 필터</label>
-            <div class="filter-row">
-                <span class="bank-chip active" id="mgr-filter-all" style="background:#2b6cb0;border-color:#2b6cb0;">전체</span>
-                <span class="bank-chip" id="mgr-filter-yes" style="color:#38a169;border-color:#38a169;">✓ 담당자 있음</span>
-                <span class="bank-chip" id="mgr-filter-no" style="color:#e53e3e;border-color:#e53e3e;">✗ 담당자 없음</span>
-            </div>
-            <label style="margin-top:8px;">방문 필터</label>
-            <div class="filter-row">
-                <span class="bank-chip active" id="visit-filter-all" style="background:#2b6cb0;border-color:#2b6cb0;">전체</span>
-                <span class="bank-chip" id="visit-filter-plan" style="color:#d97706;border-color:#f59e0b;">📋 방문예정</span>
-                <span class="bank-chip" id="visit-filter-done" style="color:#059669;border-color:#34d399;">✅ 방문완료</span>
-                <span class="bank-chip" id="visit-filter-none" style="color:#718096;border-color:#a0aec0;">미설정</span>
-            </div>
-            <input type="text" class="search-input" id="addr-filter" placeholder="주소 검색 (예: 강남, 분당, 담당자명)">
+            <input type="text" class="search-input" id="search-input" placeholder="점포명 / 주소 검색">
         </div>
-        <div id="list-container"><div class="empty-state">지도를 움직이면 목록이 나타납니다</div></div>
+
+        <!-- IBK 전용 필터 섹션 -->
+        <div class="ibk-section">
+            <div class="ibk-title">🏦 IBK기업은행 전용 필터</div>
+            <label>지역본부</label>
+            <div class="filter-row" id="ibk-region-filters"></div>
+            <label>담당자</label>
+            <div class="filter-row" id="ibk-manager-filters"></div>
+            <label>비고</label>
+            <div class="filter-row">
+                <span class="chip" id="ibk-note-filter" style="color:#d97706;border-color:#f59e0b;">📝 비고 있음만</span>
+            </div>
+        </div>
+
+        <div id="list-container"><div class="empty-state">데이터 로드 중…</div></div>
     </div>
+
     <div id="panel-overlay"></div>
-    <button id="mobile-panel-toggle">📋 목록 보기</button>
+    <button id="mobile-toggle">📋 목록 보기</button>
     <div id="kakao-map"></div>
     <div id="map"></div>
 
     <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=231190ac1aca72ada0b739110d8a0eb4"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="js/kakao_base.js"></script>
-    <script src="data/team_assignments.js"></script>
     <script src="data/bank_1st.js"></script>
     <script src="data/bank_2nd.js"></script>
+    <script src="data/branches.js"></script>
     <script>
-    // ========== 서버 동기화 설정 ==========
-    var API_URL = 'https://script.google.com/macros/s/AKfycbw3sAQHnRt_B6MJRFQ-QykMZ3gzr8ZsmNnq371tyjlj7KFxIUJmK6JJzdwj9B7BIyIp/exec';
+    // ============================================================
+    // 설정 (IBK 전용 Apps Script)
+    // ============================================================
+    var API_URL = 'https://script.google.com/macros/s/AKfycbwhXSrlElhN59TrRtxCEDuVUx0snWPMPyrdCH7j3yYUNLCAlcWY8m6lu1hJIRrPZ1l0/exec';
     var API_TOKEN = 'IBK15520!';
 
-    function setSyncStatus(state, msg){
+    function setSync(state, msg){
         var el = document.getElementById('sync-status');
         if(!el) return;
         el.className = 'sync-status ' + state;
         el.textContent = msg;
     }
 
-    function apiGet(){
+    function apiLoad(){
         var url = API_URL + '?token=' + encodeURIComponent(API_TOKEN) + '&action=load';
-        return fetch(url, { method: 'GET' })
-            .then(function(r){
-                if(!r.ok) throw new Error('HTTP ' + r.status);
-                return r.json();
-            });
+        return fetch(url).then(function(r){
+            if(!r.ok) throw new Error('HTTP ' + r.status);
+            return r.json();
+        });
     }
-
-    // POST는 Content-Type을 text/plain으로 보내 CORS preflight 회피 (Apps Script에서 e.postData.contents로 받음)
-    function apiSave(type, mid, value){
-        var payload = { token: API_TOKEN, action: 'save', type: type, mid: mid, value: value };
-        setSyncStatus('pending', '💾 저장 중…');
+    function apiSave(payload){
+        payload.token = API_TOKEN;
+        setSync('pending', '💾 저장 중…');
         return fetch(API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify(payload)
         }).then(function(r){
             if(!r.ok) throw new Error('HTTP ' + r.status);
-            setSyncStatus('ok', '✓ 동기화 완료 ' + new Date().toLocaleTimeString('ko-KR'));
+            return r.json();
+        }).then(function(res){
+            if(!res.ok) throw new Error(res.error || '저장 실패');
+            setSync('ok', '✓ IBK 동기화 완료 ' + new Date().toLocaleTimeString('ko-KR'));
+            return res;
         }).catch(function(err){
-            console.warn('서버 저장 실패:', err);
-            setSyncStatus('err', '⚠ 서버 저장 실패 (로컬 저장됨)');
+            console.error(err);
+            setSync('err', '⚠ 저장 실패: ' + err.message);
+            throw err;
         });
     }
 
-    // ========== teamAssignments 안전장치 (파일 로드 실패 시) ==========
-    if (typeof teamAssignments === 'undefined') {
-        console.warn('team_assignments.js 파일을 찾을 수 없습니다. 빈 객체로 초기화합니다.');
-        var teamAssignments = {};
-    }
-
-    // ========== 모바일 드로어 토글 ==========
-    (function(){
-        var panel = document.getElementById('side-panel');
-        var toggleBtn = document.getElementById('mobile-panel-toggle');
-        var overlay = document.getElementById('panel-overlay');
-        function openPanel(){ panel.classList.add('open'); }
-        function closePanel(){ panel.classList.remove('open'); }
-        toggleBtn.addEventListener('click', openPanel);
-        overlay.addEventListener('click', closePanel);
-        var handle = panel.querySelector('.drawer-handle');
-        var startY = 0, panelOpen = false;
-        handle.addEventListener('touchstart', function(e){ startY = e.touches[0].clientY; panelOpen = panel.classList.contains('open'); }, {passive:true});
-        handle.addEventListener('touchend', function(e){ var dy = e.changedTouches[0].clientY - startY; if(panelOpen && dy > 60) closePanel(); }, {passive:true});
-    })();
-
+    // ============================================================
+    // 은행 색상
+    // ============================================================
     var BANK_COLORS = {
-        'IBK기업은행':'#0051af','NH농협은행':'#00a651','신한은행':'#0046ff',
-        'iM뱅크(구 대구은행)':'#aa1f2e','BNK부산은행':'#e31837','광주은행':'#d4a017',
-        'BNK경남은행':'#f26522','KB국민은행':'#ffb300','하나은행':'#009688',
-        '새마을금고':'#6a1b9a','Sh수협은행':'#0277bd'
+        'IBK기업은행':'#0051af', 'NH농협은행':'#00a651', '신한은행':'#0046ff',
+        'iM뱅크(구 대구은행)':'#aa1f2e', 'BNK부산은행':'#e31837', '광주은행':'#d4a017',
+        'BNK경남은행':'#f26522', 'KB국민은행':'#ffb300', '하나은행':'#009688',
+        '새마을금고':'#6a1b9a', 'Sh수협은행':'#0277bd'
     };
-    function getBankColor(n){ return BANK_COLORS[n]||'#888'; }
+    function getBankColor(n){ return BANK_COLORS[n] || '#888'; }
 
-    // ========== localStorage 담당자 저장 (캐시) ==========
-    var STORAGE_KEY = 'bankmap_managers';
-    function loadManagerData(){
-        try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch(e){ return {}; }
-    }
-    function saveManagerData(data){
-        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e){}
-    }
-    var managerData = loadManagerData();
-    function getManager(mid){ return managerData[mid] || ''; }
-    function setManager(mid, val){
-        if(val) managerData[mid] = val; else delete managerData[mid];
-        saveManagerData(managerData);
-        apiSave('manager', mid, val || '');
-    }
+    // ============================================================
+    // IBK 데이터 (branches.js의 IBK_BRANCHES)
+    // ============================================================
+    var ibkData = (typeof IBK_BRANCHES !== 'undefined') ? IBK_BRANCHES : [];
+    var ibkByName = {};
+    ibkData.forEach(function(b){ ibkByName[b.name] = b; });
 
-    // ========== localStorage 방문 데이터 저장 (캐시) ==========
-    var VISIT_STORAGE_KEY = 'bankmap_visits';
-    function loadVisitData(){
-        try { return JSON.parse(localStorage.getItem(VISIT_STORAGE_KEY)) || {}; } catch(e){ return {}; }
-    }
-    function saveVisitData(data){
-        try { localStorage.setItem(VISIT_STORAGE_KEY, JSON.stringify(data)); } catch(e){}
-    }
-    var visitData = loadVisitData();
-    function getVisit(mid){ return visitData[mid] || { planned:false, visited:false, visitDate:'' }; }
-    function setVisit(mid, obj){
-        if(!obj.planned && !obj.visited && !obj.visitDate){
-            delete visitData[mid];
-        } else {
-            visitData[mid] = obj;
-        }
-        saveVisitData(visitData);
-        apiSave('visit', mid, obj);
-    }
+    // ============================================================
+    // 지도 초기화
+    // ============================================================
+    var map = L.map('map', {
+        zoomControl: true, maxZoom: 19, minZoom: 7, attributionControl: false
+    }).setView([37.5, 127.0], 10);
+    initKakaoBaseMap(map, { mapTypeId: 'ROADMAP' });
 
-    var map = L.map('map',{zoomControl:true,maxZoom:19,minZoom:7,attributionControl:false}).setView([37.5,127.0],10);
-    initKakaoBaseMap(map,{mapTypeId:'ROADMAP'});
-
-    // ========== 줌 레벨별 라벨 크기 ==========
+    // 줌별 라벨 크기
     var labelScaleConfig = [
-        {maxZoom:10,scale:0.5,fontMain:'8px',fontSub:'7px',padding:'2px 4px',minW:'40px',maxW:'100px'},
-        {maxZoom:12,scale:0.65,fontMain:'9px',fontSub:'7px',padding:'3px 5px',minW:'50px',maxW:'120px'},
-        {maxZoom:13,scale:0.75,fontMain:'10px',fontSub:'8px',padding:'3px 6px',minW:'55px',maxW:'140px'},
-        {maxZoom:14,scale:0.85,fontMain:'10px',fontSub:'8px',padding:'4px 7px',minW:'60px',maxW:'150px'},
-        {maxZoom:15,scale:0.92,fontMain:'11px',fontSub:'9px',padding:'4px 8px',minW:'65px',maxW:'160px'},
-        {maxZoom:16,scale:1.00,fontMain:'11px',fontSub:'9px',padding:'4px 8px',minW:'70px',maxW:'180px'},
-        {maxZoom:17,scale:1.05,fontMain:'12px',fontSub:'10px',padding:'5px 9px',minW:'75px',maxW:'200px'},
-        {maxZoom:99,scale:1.10,fontMain:'13px',fontSub:'10px',padding:'5px 10px',minW:'80px',maxW:'220px'}
+        {maxZoom:10, scale:0.55, fontMain:'9px', fontSub:'7px', padding:'2px 5px', minW:'45px', maxW:'110px'},
+        {maxZoom:12, scale:0.7, fontMain:'10px', fontSub:'8px', padding:'3px 6px', minW:'55px', maxW:'140px'},
+        {maxZoom:14, scale:0.85, fontMain:'10px', fontSub:'8px', padding:'3px 7px', minW:'60px', maxW:'160px'},
+        {maxZoom:16, scale:1.0, fontMain:'11px', fontSub:'9px', padding:'4px 8px', minW:'70px', maxW:'180px'},
+        {maxZoom:99, scale:1.1, fontMain:'12px', fontSub:'9px', padding:'5px 9px', minW:'75px', maxW:'200px'}
     ];
     function updateLabelScale(){
-        var z=map.getZoom(),cfg=labelScaleConfig[labelScaleConfig.length-1];
-        for(var i=0;i<labelScaleConfig.length;i++){if(z<=labelScaleConfig[i].maxZoom){cfg=labelScaleConfig[i];break;}}
-        var r=document.documentElement;
-        r.style.setProperty('--label-scale',cfg.scale);
-        r.style.setProperty('--label-font-main',cfg.fontMain);
-        r.style.setProperty('--label-font-sub',cfg.fontSub);
-        r.style.setProperty('--label-padding',cfg.padding);
-        r.style.setProperty('--label-min-width',cfg.minW);
-        r.style.setProperty('--label-max-width',cfg.maxW);
+        var z = map.getZoom();
+        var cfg = labelScaleConfig[labelScaleConfig.length-1];
+        for(var i = 0; i < labelScaleConfig.length; i++){
+            if(z <= labelScaleConfig[i].maxZoom){ cfg = labelScaleConfig[i]; break; }
+        }
+        var r = document.documentElement;
+        r.style.setProperty('--label-scale', cfg.scale);
+        r.style.setProperty('--label-font-main', cfg.fontMain);
+        r.style.setProperty('--label-font-sub', cfg.fontSub);
+        r.style.setProperty('--label-padding', cfg.padding);
+        r.style.setProperty('--label-min-width', cfg.minW);
+        r.style.setProperty('--label-max-width', cfg.maxW);
     }
-    map.on('zoomend',updateLabelScale); updateLabelScale();
+    map.on('zoomend', updateLabelScale);
+    updateLabelScale();
 
-    // ========== 연결선 ==========
-    var connectorLines={};
-    function getMid(p){return(p['점포명']||'')+'_'+(p['은행명']||'')+'_'+(p['지번주소']||'');}
-    function updateConnectorLine(layer){
-        if(!layer.getTooltip||!layer.getTooltip()||!layer.getLatLng)return;
-        var mid=getMid(layer._props||{}),tt=layer.getTooltip(),off=tt.options.offset||[0,0];
-        if(Math.sqrt(off[0]*off[0]+off[1]*off[1])<15){if(connectorLines[mid]){map.removeLayer(connectorLines[mid]);delete connectorLines[mid];}return;}
-        var c=getBankColor((layer._props||{})['은행명']||''),ml=layer.getLatLng(),mp=map.latLngToContainerPoint(ml);
-        var lp=L.point(mp.x+off[0],mp.y+off[1]),ll=map.containerPointToLatLng(lp);
-        if(connectorLines[mid]){connectorLines[mid].setLatLngs([ml,ll]);connectorLines[mid].setStyle({color:c});}
-        else{connectorLines[mid]=L.polyline([ml,ll],{color:c,weight:1.5,dashArray:'4,3',opacity:0.6,interactive:false}).addTo(map);}
-    }
-    function updateAllConnectors(){allMarkers.forEach(function(m){if(map.hasLayer(m)&&m.getTooltip&&m.getTooltip())updateConnectorLine(m);});}
-    map.on('moveend zoomend resize',updateAllConnectors);
-
-    // ========== 드래그 라벨 ==========
-    var tooltipOffsets={};
-    function makeDraggableTooltip(layer){
-        if(!layer.getTooltip||!layer.getTooltip())return;
-        var tt=layer.getTooltip(),el=tt.getElement();if(!el||el._dragReady)return;
-        el._dragReady=true;el.classList.add('draggable-tooltip');
-        var mid=getMid(layer._props||{});
-        el.addEventListener('mousedown',function(e){
-            if(e.button!==0)return;e.stopPropagation();e.preventDefault();
-            var sx=e.clientX,sy=e.clientY,cur=tooltipOffsets[mid]||{x:tt.options.offset[0],y:tt.options.offset[1]};
-            map.dragging.disable();el.style.cursor='grabbing';
-            function onMove(ev){var nx=cur.x+(ev.clientX-sx),ny=cur.y+(ev.clientY-sy);tt.options.offset=[nx,ny];tooltipOffsets[mid]={x:nx,y:ny};if(layer.getLatLng)tt.setLatLng(layer.getLatLng());updateConnectorLine(layer);}
-            function onUp(){map.dragging.enable();el.style.cursor='grab';document.removeEventListener('mousemove',onMove);document.removeEventListener('mouseup',onUp);}
-            document.addEventListener('mousemove',onMove);document.addEventListener('mouseup',onUp);
-        });
+    // ============================================================
+    // 라벨 빌더 (1·2차용 단순 라벨)
+    // ============================================================
+    function buildLabel(bankName, branchName){
+        var c = getBankColor(bankName);
+        return '<div class="label-box" style="border-color:' + c + ';">' +
+            '<div class="lbl-name">' + escHtml(branchName) + '</div>' +
+            '<span class="lbl-bank" style="background:' + c + ';">' + escHtml(bankName) + '</span>' +
+        '</div>';
     }
 
-    // ========== 라벨 바운스 트리거 ==========
-    function triggerLabelBounce(layer){
-        if(!layer.getTooltip||!layer.getTooltip())return;
-        var tt=layer.getTooltip(),el=tt.getElement();
-        if(!el)return;
-        var box=el.querySelector('.bank-tooltip-box');
-        if(!box)return;
-        box.classList.remove('bounce-anim');
-        void box.offsetWidth;
-        box.classList.add('bounce-anim');
-        setTimeout(function(){ box.classList.remove('bounce-anim'); }, 800);
-    }
+    // ============================================================
+    // 1·2차 마커 생성 (단순)
+    // ============================================================
+    var allMarkers = [];
 
-    // ========== 팀원 매칭 함수 ==========
-    function getTeamForBranch(props){
-        if((props['은행명']||'') !== 'IBK기업은행') return null;
-        var addr = (props['지번주소']||'') + ' ' + (props['도로명']||'');
-        for(var name in teamAssignments){
-            var info = teamAssignments[name];
-            if(!info.regions) continue;
-            for(var i=0; i<info.regions.length; i++){
-                if(addr.indexOf(info.regions[i]) !== -1) return name;
-            }
-        }
-        return null;
-    }
-    function matchesTeam(props, teamName){
-        if(teamName === 'all') return true;
-        if(teamName === 'unassigned'){
-            return (props['은행명']||'') === 'IBK기업은행' && getTeamForBranch(props) === null;
-        }
-        return getTeamForBranch(props) === teamName;
-    }
+    function createBankMarkers(geojson, sourceLabel){
+        L.geoJson(geojson, {
+            pointToLayer: function(f, ll){
+                var p = f.properties;
+                var bankName = p['은행명'] || '';
+                var branchName = p['점포명'] || '';
+                var c = getBankColor(bankName);
 
-    // ========== 라벨 빌드 ==========
-    function buildBankLabel(p){
-        var b=p['은행명']||'',n=p['점포명']||'',c=getBankColor(b);if(!n)return'';
-        var mid=getMid(p), mgr=getManager(mid), ev=p['담당평가사']||'';
-        var v=getVisit(mid);
-        var teamName = getTeamForBranch(p);
-        var teamColor = teamName && teamAssignments[teamName] ? teamAssignments[teamName].color : null;
+                var m = L.circleMarker(ll, {
+                    radius: 6, fillColor: c, color: '#fff',
+                    weight: 1.5, fillOpacity: 0.85
+                });
+                m._bankName = bankName;
+                m._branchName = branchName;
+                m._source = sourceLabel;  // '1st', '2nd'
+                m._props = p;
+                m._isIBK = false;
 
-        var html='<div class="bank-tooltip-box" style="border-color:'+c+' !important;">'+
-            '<div class="label-name">'+n+'</div>'+
-            '<span class="label-bank" style="background:'+c+';">'+b+'</span>';
-        if(teamName && teamColor){
-            html+='<div class="label-team" style="background:'+teamColor+';">👤 '+teamName+'</div>';
-        }
-        if(ev==='O') html+='<div class="label-eval eval-o">○ 접수이력</div>';
-        else if(ev==='X') html+='<div class="label-eval eval-x">✗ 미접수</div>';
-        if(mgr) html+='<div class="label-manager">👤 '+mgr+'</div>';
-        if(v.planned || v.visited){
-            html+='<div class="label-visit-badges">';
-            if(v.planned) html+='<span class="label-visit-plan">📋 방문예정</span>';
-            if(v.visited) html+='<span class="label-visit-done">✅ '+(v.visitDate||'방문완료')+'</span>';
-            html+='</div>';
-        }
-        html+='</div>';
-        return html;
-    }
-
-    // ========== 라벨 갱신 ==========
-    function refreshLabel(layer, doBounce){
-        var p=layer._props||{}, mid=getMid(p);
-        var off=tooltipOffsets[mid]?[tooltipOffsets[mid].x,tooltipOffsets[mid].y]:[0,-12];
-        if(layer.getTooltip) layer.unbindTooltip();
-        if(connectorLines[mid]){map.removeLayer(connectorLines[mid]);delete connectorLines[mid];}
-        var lbl=buildBankLabel(p);
-        if(lbl){
-            layer.bindTooltip(lbl,{permanent:true,direction:'top',className:'bank-label',offset:off,interactive:true});
-            layer.on('tooltipopen',function(){setTimeout(function(){makeDraggableTooltip(layer);},50);});
-        }
-        setTimeout(function(){
-            updateConnectorLine(layer);
-            if(doBounce) triggerLabelBounce(layer);
-        },100);
-    }
-
-    // ========== 필터 ==========
-    var allBanks=Object.keys(BANK_COLORS),bankVisible={},addrKeyword='',labelsVisible=true;
-    var mgrFilter='all';
-    var evalFilter='all';
-    var visitFilter='all';
-    var teamFilter='all';
-    allBanks.forEach(function(b){bankVisible[b]=true;});
-
-    // ========== 팀원 칩 생성 ==========
-    (function buildTeamChips(){
-        var div = document.getElementById('team-filters');
-        var infoBar = document.getElementById('team-info-bar');
-
-        var allChip = document.createElement('span');
-        allChip.className = 'team-chip active';
-        allChip.style.background = '#1a365d';
-        allChip.style.color = 'white';
-        allChip.innerHTML = '👥 전체';
-        allChip.dataset.team = '__all__';
-        allChip.onclick = function(){ window._setTeamFilter('all'); };
-        div.appendChild(allChip);
-
-        Object.keys(teamAssignments).forEach(function(name){
-            var info = teamAssignments[name];
-            var chip = document.createElement('span');
-            chip.className = 'team-chip';
-            chip.style.borderColor = info.color;
-            chip.style.color = info.color;
-            chip.dataset.team = name;
-            chip.innerHTML = '👤 ' + name + ' <span class="chip-count">0</span>';
-            chip.onclick = function(){ window._setTeamFilter(teamFilter === name ? 'all' : name); };
-            div.appendChild(chip);
-        });
-
-        var noneChip = document.createElement('span');
-        noneChip.className = 'team-chip';
-        noneChip.style.borderColor = '#a0aec0';
-        noneChip.style.color = '#718096';
-        noneChip.dataset.team = 'unassigned';
-        noneChip.innerHTML = '❔ 미배정 <span class="chip-count">0</span>';
-        noneChip.onclick = function(){ window._setTeamFilter(teamFilter === 'unassigned' ? 'all' : 'unassigned'); };
-        div.appendChild(noneChip);
-
-        function setTeamFilter(val){
-            teamFilter = val;
-            document.querySelectorAll('#team-filters .team-chip').forEach(function(c){
-                c.classList.remove('active');
-                var t = c.dataset.team;
-                if(t === '__all__'){
-                    c.style.background = 'white';
-                    c.style.color = '#1a365d';
-                } else if(t === 'unassigned'){
-                    c.style.background = 'white';
-                    c.style.color = '#718096';
-                } else if(teamAssignments[t]){
-                    c.style.background = 'white';
-                    c.style.color = teamAssignments[t].color;
-                }
-            });
-
-            if(val === 'all'){
-                allChip.classList.add('active');
-                allChip.style.background = '#1a365d';
-                allChip.style.color = 'white';
-                infoBar.classList.remove('visible');
-            } else if(val === 'unassigned'){
-                noneChip.classList.add('active');
-                noneChip.style.background = '#718096';
-                noneChip.style.color = 'white';
-                infoBar.classList.add('visible');
-                infoBar.innerHTML = '<b>❔ 미배정</b> IBK기업은행 점포 (팀원 배정 필요)';
-            } else if(teamAssignments[val]){
-                var activeChip = document.querySelector('[data-team="'+val+'"]');
-                var info = teamAssignments[val];
-                if(activeChip){
-                    activeChip.classList.add('active');
-                    activeChip.style.background = info.color;
-                    activeChip.style.color = 'white';
-                }
-                infoBar.classList.add('visible');
-                infoBar.innerHTML = '<b>👤 '+val+'</b> 담당지역: ' + (info.regions||[]).join(', ') +
-                                    (info.note ? ' <span style="color:#718096;">('+info.note+')</span>' : '');
-            }
-            applyFilters();
-        }
-        window._setTeamFilter = setTeamFilter;
-    })();
-
-    // ========== 팀원별 카운트 업데이트 ==========
-    function updateTeamChipCounts(){
-        var unassignedCnt = 0;
-        var teamCounts = {};
-        Object.keys(teamAssignments).forEach(function(n){ teamCounts[n] = 0; });
-
-        allMarkers.forEach(function(m){
-            if((m._props['은행명']||'') !== 'IBK기업은행') return;
-            var t = getTeamForBranch(m._props);
-            if(t && teamCounts.hasOwnProperty(t)) teamCounts[t]++;
-            else if(!t) unassignedCnt++;
-        });
-
-        Object.keys(teamCounts).forEach(function(name){
-            var chip = document.querySelector('[data-team="'+name+'"] .chip-count');
-            if(chip) chip.textContent = teamCounts[name];
-        });
-        var noneChipCount = document.querySelector('[data-team="unassigned"] .chip-count');
-        if(noneChipCount) noneChipCount.textContent = unassignedCnt;
-    }
-
-    // 담당평가사 필터 버튼 이벤트
-    (function(){
-        var btnAll=document.getElementById('eval-filter-all');
-        var btnO=document.getElementById('eval-filter-o');
-        var btnX=document.getElementById('eval-filter-x');
-        function setEvalFilter(val){
-            evalFilter=val;
-            [btnAll,btnO,btnX].forEach(function(b){b.classList.remove('active');b.style.background='white';});
-            if(val==='all'){btnAll.classList.add('active');btnAll.style.background='#2b6cb0';btnAll.style.color='white';}
-            else if(val==='o'){btnO.classList.add('active');btnO.style.background='#38a169';btnO.style.color='white';}
-            else{btnX.classList.add('active');btnX.style.background='#e53e3e';btnX.style.color='white';}
-            applyFilters();
-        }
-        btnAll.onclick=function(){setEvalFilter('all');};
-        btnO.onclick=function(){setEvalFilter(evalFilter==='o'?'all':'o');};
-        btnX.onclick=function(){setEvalFilter(evalFilter==='x'?'all':'x');};
-    })();
-
-    // 담당자 필터 버튼 이벤트
-    (function(){
-        var btnAll=document.getElementById('mgr-filter-all');
-        var btnYes=document.getElementById('mgr-filter-yes');
-        var btnNo=document.getElementById('mgr-filter-no');
-        function setMgrFilter(val){
-            mgrFilter=val;
-            [btnAll,btnYes,btnNo].forEach(function(b){b.classList.remove('active');b.style.background='white';});
-            if(val==='all'){btnAll.classList.add('active');btnAll.style.background='#2b6cb0';btnAll.style.color='white';}
-            else if(val==='yes'){btnYes.classList.add('active');btnYes.style.background='#38a169';btnYes.style.color='white';}
-            else{btnNo.classList.add('active');btnNo.style.background='#e53e3e';btnNo.style.color='white';}
-            applyFilters();
-        }
-        btnAll.onclick=function(){setMgrFilter('all');};
-        btnYes.onclick=function(){setMgrFilter(mgrFilter==='yes'?'all':'yes');};
-        btnNo.onclick=function(){setMgrFilter(mgrFilter==='no'?'all':'no');};
-    })();
-
-    // 방문 필터 버튼 이벤트
-    (function(){
-        var btnAll=document.getElementById('visit-filter-all');
-        var btnPlan=document.getElementById('visit-filter-plan');
-        var btnDone=document.getElementById('visit-filter-done');
-        var btnNone=document.getElementById('visit-filter-none');
-        function setVisitFilter(val){
-            visitFilter=val;
-            [btnAll,btnPlan,btnDone,btnNone].forEach(function(b){b.classList.remove('active');b.style.background='white';});
-            if(val==='all'){btnAll.classList.add('active');btnAll.style.background='#2b6cb0';btnAll.style.color='white';}
-            else if(val==='plan'){btnPlan.classList.add('active');btnPlan.style.background='#d97706';btnPlan.style.color='white';}
-            else if(val==='done'){btnDone.classList.add('active');btnDone.style.background='#059669';btnDone.style.color='white';}
-            else{btnNone.classList.add('active');btnNone.style.background='#718096';btnNone.style.color='white';}
-            applyFilters();
-        }
-        btnAll.onclick=function(){setVisitFilter('all');};
-        btnPlan.onclick=function(){setVisitFilter(visitFilter==='plan'?'all':'plan');};
-        btnDone.onclick=function(){setVisitFilter(visitFilter==='done'?'all':'done');};
-        btnNone.onclick=function(){setVisitFilter(visitFilter==='none'?'all':'none');};
-    })();
-
-    var filterDiv=document.getElementById('bank-filters');
-    allBanks.forEach(function(bank){
-        var chip=document.createElement('span');chip.className='bank-chip active';
-        chip.textContent=bank.replace('(구 대구은행)','');
-        chip.style.background=getBankColor(bank);chip.style.borderColor=getBankColor(bank);chip.dataset.bank=bank;
-        chip.onclick=function(){
-            bankVisible[bank]=!bankVisible[bank];
-            if(bankVisible[bank]){chip.classList.add('active');chip.style.background=getBankColor(bank);chip.style.color='white';}
-            else{chip.classList.remove('active');chip.style.background='white';chip.style.color=getBankColor(bank);}
-            applyFilters();
-        };
-        filterDiv.appendChild(chip);
-    });
-    document.getElementById('addr-filter').addEventListener('input',function(){addrKeyword=this.value.trim().toLowerCase();applyFilters();});
-
-    // ========== 마커 생성 ==========
-    var allMarkers=[], markerByMid={};
-    function createMarkers(geojson){
-        L.geoJson(geojson,{
-            pointToLayer:function(f,ll){
-                var b=f.properties['은행명']||'',c=getBankColor(b);
-                var m=L.circleMarker(ll,{radius:6,fillColor:c,color:'#fff',weight:1.5,fillOpacity:0.85});
-
-                if(b === 'IBK기업은행'){
-                    var tName = getTeamForBranch(f.properties);
-                    if(tName && teamAssignments[tName]){
-                        m.setStyle({ color: teamAssignments[tName].color, weight: 3, radius: 7 });
-                    }
-                }
-
-                m._bankName=b;m._props=f.properties;allMarkers.push(m);
-                markerByMid[getMid(f.properties)]=m;
-                return m;
-            },
-            onEachFeature:function(f,layer){
-                var p=f.properties,c=getBankColor(p['은행명']||''),mid=getMid(p);
-
-                layer.on('click',function(){
-                    var curMgr=getManager(mid), ev=p['담당평가사']||'';
-                    var curVisit=getVisit(mid);
-                    var teamName = getTeamForBranch(p);
-                    var teamColor = teamName && teamAssignments[teamName] ? teamAssignments[teamName].color : null;
-
-                    var teamHtml='';
-                    if(teamName){
-                        teamHtml='<div class="info-row"><b>담당팀원</b> <span style="color:'+teamColor+';font-weight:700;">👤 '+teamName+'</span></div>';
-                    }
-                    var evalHtml='';
-                    if(ev==='O') evalHtml='<div class="info-row"><b>접수이력</b> <span style="color:#38a169;font-weight:700;">○ 접수이력 있음</span></div>';
-                    else if(ev==='X') evalHtml='<div class="info-row"><b>접수이력</b> <span style="color:#e53e3e;font-weight:700;">✗ 접수이력 없음</span></div>';
-
-                    var popupHtml='<div class="popup-inner"><div class="bank-tag" style="background:'+c+';">'+(p['은행명']||'')+'</div>'+
-                        '<div class="name">'+(p['점포명']||'')+'</div>'+
-                        teamHtml+
-                        '<div class="info-row"><b>지번</b> '+(p['지번주소']||'-')+'</div>'+
-                        '<div class="info-row"><b>도로명</b> '+(p['도로명']||'-')+'</div>'+
-                        '<div class="info-row"><b>전화</b> '+(p['전화번호']||'-')+'</div>'+
-                        evalHtml+
-                        '<div class="manager-edit">'+
-                            '<b>담당자</b>'+
-                            '<input type="text" class="mgr-input" value="'+escHtml(curMgr)+'" placeholder="담당자명 입력">'+
-                            '<button class="save-btn mgr-save-btn">저장</button>'+
-                        '</div>'+
-                        '<div class="visit-section">'+
-                            '<div class="visit-row">'+
-                                '<label><input type="checkbox" class="visit-plan-chk" '+(curVisit.planned?'checked':'')+'>'+
-                                '<span style="color:#d97706;">📋 방문예정은행</span></label>'+
-                            '</div>'+
-                            '<div class="visit-row">'+
-                                '<label><input type="checkbox" class="visit-done-chk" '+(curVisit.visited?'checked':'')+'>'+
-                                '<span style="color:#059669;">✅ 방문한 은행</span></label>'+
-                                '<input type="date" class="visit-date-input" value="'+(curVisit.visitDate||'')+'" title="방문일">'+
-                            '</div>'+
-                        '</div>'+
-                        '</div>';
-                    layer.unbindPopup();
-                    layer.bindPopup(popupHtml,{maxWidth:300}).openPopup();
-                    setTimeout(function(){
-                        var inp=document.querySelector('.mgr-input');
-                        var btn=document.querySelector('.mgr-save-btn');
-                        var planChk=document.querySelector('.visit-plan-chk');
-                        var doneChk=document.querySelector('.visit-done-chk');
-                        var dateInp=document.querySelector('.visit-date-input');
-                        if(!inp||!btn) return;
-
-                        function doSaveMgr(){
-                            var val=inp.value.trim();
-                            setManager(mid, val);
-                            refreshLabel(layer, false);
-                            updateList();
-                            btn.textContent='✓'; btn.style.background='#38a169';
-                            setTimeout(function(){btn.textContent='저장';btn.style.background='';},800);
-                        }
-                        btn.onclick=doSaveMgr;
-                        inp.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();doSaveMgr();}});
-
-                        if(planChk){
-                            planChk.onchange=function(){
-                                var v=getVisit(mid);
-                                v.planned=this.checked;
-                                setVisit(mid,v);
-                                refreshLabel(layer, this.checked);
-                                updateList();
-                            };
-                        }
-                        if(doneChk){
-                            doneChk.onchange=function(){
-                                var v=getVisit(mid);
-                                v.visited=this.checked;
-                                if(this.checked && !v.visitDate){
-                                    var today=new Date().toISOString().slice(0,10);
-                                    v.visitDate=today;
-                                    if(dateInp) dateInp.value=today;
-                                }
-                                if(!this.checked){ v.visitDate=''; if(dateInp) dateInp.value=''; }
-                                setVisit(mid,v);
-                                refreshLabel(layer, this.checked);
-                                updateList();
-                            };
-                        }
-                        if(dateInp){
-                            dateInp.onchange=function(){
-                                var v=getVisit(mid);
-                                v.visitDate=this.value;
-                                if(this.value && !v.visited){
-                                    v.visited=true;
-                                    if(doneChk) doneChk.checked=true;
-                                }
-                                setVisit(mid,v);
-                                refreshLabel(layer, !!this.value);
-                                updateList();
-                            };
-                        }
-                    },80);
+                m.bindTooltip(buildLabel(bankName, branchName), {
+                    permanent: true, direction: 'top',
+                    className: 'bank-label', offset: [0, -10]
                 });
 
-                var lbl=buildBankLabel(p);
-                if(lbl){
-                    var off=tooltipOffsets[mid]?[tooltipOffsets[mid].x,tooltipOffsets[mid].y]:[0,-12];
-                    layer.bindTooltip(lbl,{permanent:true,direction:'top',className:'bank-label',offset:off,interactive:true});
-                    layer.on('tooltipopen',function(){setTimeout(function(){makeDraggableTooltip(layer);},50);});
-                }
+                m.on('click', function(){
+                    openSimpleBankPopup(m);
+                });
+
+                allMarkers.push(m);
+                return m;
             }
         }).addTo(map);
     }
-    function escHtml(s){return(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-    createMarkers(json_bank_1st);createMarkers(json_bank_2nd);
 
-    // ========== 필터 적용 ==========
-    function applyFilters(){
-        var cnt=0;
-        allMarkers.forEach(function(m){
-            var b=m._bankName,a=(m._props['지번주소']||'').toLowerCase(),r=(m._props['도로명']||'').toLowerCase(),n=(m._props['점포명']||'').toLowerCase();
-            var mid=getMid(m._props||{}), mgr=getManager(mid), ev=m._props['담당평가사']||'';
-            var mgrLow=mgr.toLowerCase();
-            var v=getVisit(mid);
+    // ============================================================
+    // IBK 마커 생성 (별도)
+    // ============================================================
+    var ibkMarkers = {};
+    function createIbkMarkers(){
+        ibkData.forEach(function(b){
+            if(!b.lat || !b.lng) return;
+            var c = getBankColor('IBK기업은행');
 
-            var ok=bankVisible[b]!==false&&(!addrKeyword||a.indexOf(addrKeyword)!==-1||r.indexOf(addrKeyword)!==-1||n.indexOf(addrKeyword)!==-1||mgrLow.indexOf(addrKeyword)!==-1);
+            var m = L.circleMarker([b.lat, b.lng], {
+                radius: 6, fillColor: c, color: '#fff',
+                weight: 1.5, fillOpacity: 0.85
+            });
+            m._bankName = 'IBK기업은행';
+            m._branchName = b.name;
+            m._source = 'ibk';
+            m._isIBK = true;
+            m._ibkData = b;
 
-            if(ok) ok = matchesTeam(m._props, teamFilter);
+            m.bindTooltip(buildLabel('IBK기업은행', b.name), {
+                permanent: true, direction: 'top',
+                className: 'bank-label', offset: [0, -10]
+            });
 
-            if(ok && evalFilter==='o') ok=(ev==='O');
-            if(ok && evalFilter==='x') ok=(ev==='X');
-            if(ok && mgrFilter==='yes') ok=!!mgr;
-            if(ok && mgrFilter==='no') ok=!mgr;
-            if(ok && visitFilter==='plan') ok=!!v.planned;
-            if(ok && visitFilter==='done') ok=!!v.visited;
-            if(ok && visitFilter==='none') ok=(!v.planned && !v.visited);
+            m.on('click', function(){
+                openIbkPopup(b, m);
+            });
 
-            if(ok){if(!map.hasLayer(m))map.addLayer(m);cnt++;}
-            else{if(map.hasLayer(m))map.removeLayer(m);if(connectorLines[mid]){map.removeLayer(connectorLines[mid]);delete connectorLines[mid];}}
+            allMarkers.push(m);
+            ibkMarkers[b.name] = m;
+            m.addTo(map);
         });
-        document.getElementById('visible-count').textContent=cnt.toLocaleString();
-        updateList();
-        updateTeamChipCounts();
-        setTimeout(updateAllConnectors,200);
     }
 
-    // ========== 사이드 목록 ==========
-    function updateList(){
-        var c=document.getElementById('list-container'),bounds=map.getBounds(),items=[];
-        allMarkers.forEach(function(m){if(map.hasLayer(m)&&bounds.contains(m.getLatLng()))items.push(m);});
-        items.sort(function(a,b){return(a._props['지번주소']||'').localeCompare(b._props['지번주소']||'','ko');});
-        if(!items.length){c.innerHTML='<div class="empty-state">화면 내 표시할 지점이 없습니다</div>';return;}
-        var html='',max=Math.min(items.length,200);
-        for(var i=0;i<max;i++){
-            var m=items[i],p=m._props,col=getBankColor(p['은행명']||'');
-            var mid=getMid(p),mgr=getManager(mid),ev=p['담당평가사']||'';
-            var v=getVisit(mid);
-            var teamName = getTeamForBranch(p);
-            var teamColor = teamName && teamAssignments[teamName] ? teamAssignments[teamName].color : null;
+    // ============================================================
+    // 1·2차 단순 팝업
+    // ============================================================
+    function openSimpleBankPopup(marker){
+        var p = marker._props;
+        var c = getBankColor(p['은행명'] || '');
+        var html = '<div class="popup-inner">' +
+            '<div class="bank-tag" style="background:' + c + ';">' + escHtml(p['은행명'] || '') + '</div>' +
+            '<div class="branch-name">' + escHtml(p['점포명'] || '') + '</div>' +
+            '<div class="info-row"><b>지번</b> ' + escHtml(p['지번주소'] || '-') + '</div>' +
+            '<div class="info-row"><b>도로명</b> ' + escHtml(p['도로명'] || '-') + '</div>' +
+            '<div class="info-row"><b>전화</b> ' + escHtml(p['전화번호'] || '-') + '</div>' +
+        '</div>';
+        marker.unbindPopup();
+        marker.bindPopup(html, { maxWidth: 300 }).openPopup();
+    }
 
-            var teamBadge = '';
-            if(teamName){
-                teamBadge = '<span style="background:'+teamColor+';color:white;padding:1px 6px;border-radius:3px;font-size:9px;font-weight:700;margin-left:6px;">👤 '+teamName+'</span>';
-            }
+    // ============================================================
+    // IBK 풀 팝업 (편집 가능)
+    // ============================================================
+    function openIbkPopup(b, marker){
+        var c = getBankColor('IBK기업은행');
+        var html = '<div class="popup-inner">' +
+            '<div class="bank-tag" style="background:' + c + ';">IBK기업은행</div>' +
+            '<div class="branch-name">' + escHtml(b.name) + '</div>' +
+            '<div class="info-row"><b>지역본부</b> ' + escHtml(b.region || '-') + '</div>' +
+            '<div class="info-row"><b>주소</b> ' + escHtml((b.sido || '') + ' ' + (b.sigungu || '')) + '</div>' +
+            (b.group ? '<div class="info-row"><b>그룹</b> ' + escHtml(b.group) + '</div>' : '') +
 
-            var evalBadge='';
-            if(ev==='O') evalBadge='<span style="color:#38a169;font-weight:700;font-size:10px;margin-left:6px;">○ 접수이력</span>';
-            else if(ev==='X') evalBadge='<span style="color:#e53e3e;font-weight:700;font-size:10px;margin-left:6px;">✗ 미접수</span>';
-            var visitBadges='';
-            if(v.planned || v.visited){
-                visitBadges='<div class="visit-badges">';
-                if(v.planned) visitBadges+='<span class="visit-badge-plan">📋 방문예정</span>';
-                if(v.visited) visitBadges+='<span class="visit-badge-done">✅ '+(v.visitDate||'방문완료')+'</span>';
-                visitBadges+='</div>';
-            }
-            html+='<div class="list-item" onclick="focusMarker('+m._leaflet_id+')">'+
-                '<span class="bank-badge" style="background:'+col+';">'+(p['은행명']||'')+'</span>'+teamBadge+evalBadge+
-                '<div class="name">'+(p['점포명']||'')+'</div>'+
-                '<div class="addr">'+(p['지번주소']||p['도로명']||'')+'</div>'+
-                (mgr?'<div class="manager">👤 '+mgr+'</div>':'')+
-                visitBadges+
-                (p['전화번호']?'<div class="phone">📞 '+p['전화번호']+'</div>':'')+'</div>';
+            // I 시트 정보 + 비고
+            '<div class="popup-section">' +
+                '<h3>I. 지점 개요</h3>' +
+                '<div class="info-row"><b>담당자</b> ' + escHtml(b.manager || '-') + '</div>' +
+                '<div class="info-row"><b>등록상태</b> ' + escHtml(b.reg_status || '-') + '</div>' +
+                '<div class="visit-row">' +
+                    '<b>방문일</b>' +
+                    '<input type="date" class="visit-date-input" value="' + escAttr(b.visit_date || '') + '">' +
+                '</div>' +
+                '<div style="margin-top:8px;font-size:11px;color:#4a5568;font-weight:600;">비고 (지점)</div>' +
+                '<div class="note-edit">' +
+                    '<textarea class="note-branch" placeholder="지점 관련 비고">' + escHtml(b.note_branch || '') + '</textarea>' +
+                    '<button class="save-btn save-note-branch">저장</button>' +
+                '</div>' +
+            '</div>' +
+
+            // II 시트 정보 + 비고
+            '<div class="popup-section">' +
+                '<h3>II. 담당자 개요</h3>' +
+                buildHistoryTable(b.history) +
+                '<div style="margin-top:8px;font-size:11px;color:#4a5568;font-weight:600;">비고 (담당자)</div>' +
+                '<div class="note-edit">' +
+                    '<textarea class="note-manager" placeholder="담당자 관련 비고">' + escHtml(b.note_manager || '') + '</textarea>' +
+                    '<button class="save-btn save-note-manager">저장</button>' +
+                '</div>' +
+            '</div>' +
+        '</div>';
+
+        marker.unbindPopup();
+        marker.bindPopup(html, {
+            maxWidth: 360,
+            autoPan: true,
+            className: 'ibk-popup-wrap'
+        }).openPopup();
+
+        setTimeout(function(){ bindIbkPopupEvents(b, marker); }, 80);
+    }
+
+    function buildHistoryTable(history){
+        if(!history || !history.length){
+            return '<div class="history-empty">정감이력 없음</div>';
         }
-        if(items.length>200)html+='<div class="empty-state">외 '+(items.length-200)+'건 (줌인하면 더 표시)</div>';
-        c.innerHTML=html;
+        var rows = '<table class="history-table"><thead><tr>' +
+            '<th>년/월</th><th>담당자</th><th>정감</th>' +
+            '</tr></thead><tbody>';
+        history.forEach(function(h){
+            rows += '<tr>' +
+                '<td>' + (h.year || '') + (h.month ? '.' + h.month : '') + '</td>' +
+                '<td>' + escHtml(h.person || '') + '</td>' +
+                '<td>' + escHtml(h.appraiser || '') + '</td>' +
+            '</tr>';
+        });
+        rows += '</tbody></table>';
+        return rows;
     }
-    window.focusMarker=function(id){
-        map.eachLayer(function(l){if(l._leaflet_id===id){map.setView(l.getLatLng(),16);l.fire('click');}});
-        var panel=document.getElementById('side-panel');
-        if(window.innerWidth<=768) panel.classList.remove('open');
-    };
-    map.on('moveend zoomend',updateList);
 
-    // ========== 라벨 토글 + 초기화 컨트롤 ==========
+    function bindIbkPopupEvents(b, marker){
+        var noteBranchEl = document.querySelector('.note-branch');
+        var btnBranch = document.querySelector('.save-note-branch');
+        var noteMgrEl = document.querySelector('.note-manager');
+        var btnMgr = document.querySelector('.save-note-manager');
+        var dateInp = document.querySelector('.visit-date-input');
+
+        if(btnBranch){
+            btnBranch.onclick = function(){
+                var val = noteBranchEl.value;
+                btnBranch.disabled = true;
+                apiSave({ action: 'save_note', type: 'branch', name: b.name, value: val })
+                    .then(function(){
+                        b.note_branch = val;
+                        updateList();
+                        btnBranch.classList.add('saved');
+                        btnBranch.textContent = '✓ 저장됨';
+                        setTimeout(function(){
+                            btnBranch.classList.remove('saved');
+                            btnBranch.textContent = '저장';
+                            btnBranch.disabled = false;
+                        }, 1200);
+                    })
+                    .catch(function(){ btnBranch.disabled = false; });
+            };
+        }
+        if(btnMgr){
+            btnMgr.onclick = function(){
+                var val = noteMgrEl.value;
+                btnMgr.disabled = true;
+                apiSave({ action: 'save_note', type: 'manager', name: b.name, value: val })
+                    .then(function(){
+                        b.note_manager = val;
+                        updateList();
+                        btnMgr.classList.add('saved');
+                        btnMgr.textContent = '✓ 저장됨';
+                        setTimeout(function(){
+                            btnMgr.classList.remove('saved');
+                            btnMgr.textContent = '저장';
+                            btnMgr.disabled = false;
+                        }, 1200);
+                    })
+                    .catch(function(){ btnMgr.disabled = false; });
+            };
+        }
+        if(dateInp){
+            dateInp.onchange = function(){
+                apiSave({ action: 'save_visit', name: b.name, value: this.value })
+                    .then(function(){ b.visit_date = dateInp.value; })
+                    .catch(function(){});
+            };
+        }
+    }
+
+    // ============================================================
+    // 필터 상태
+    // ============================================================
+    var bankVisible = {};
+    Object.keys(BANK_COLORS).forEach(function(b){ bankVisible[b] = true; });
+    var searchKeyword = '';
+    var ibkRegionFilter = 'all';
+    var ibkManagerFilter = 'all';
+    var ibkNoteOnly = false;
+
+    // ============================================================
+    // 은행 필터 칩
+    // ============================================================
+    var bankFilterDiv = document.getElementById('bank-filters');
+    Object.keys(BANK_COLORS).forEach(function(bank){
+        var chip = document.createElement('span');
+        chip.className = 'chip active';
+        chip.textContent = bank.replace('(구 대구은행)', '');
+        chip.style.background = getBankColor(bank);
+        chip.style.borderColor = getBankColor(bank);
+        chip.dataset.bank = bank;
+        chip.onclick = function(){
+            bankVisible[bank] = !bankVisible[bank];
+            if(bankVisible[bank]){
+                chip.classList.add('active');
+                chip.style.background = getBankColor(bank);
+                chip.style.color = 'white';
+            } else {
+                chip.classList.remove('active');
+                chip.style.background = 'white';
+                chip.style.color = getBankColor(bank);
+            }
+            applyFilters();
+        };
+        bankFilterDiv.appendChild(chip);
+    });
+
+    // 검색
+    document.getElementById('search-input').addEventListener('input', function(){
+        searchKeyword = this.value.trim().toLowerCase();
+        applyFilters();
+    });
+
+    // ============================================================
+    // IBK 전용 필터 칩 (지역본부 / 담당자)
+    // ============================================================
+    function buildIbkFilterChips(){
+        var regions = {};
+        var managers = {};
+        ibkData.forEach(function(b){
+            if(b.region) regions[b.region] = (regions[b.region] || 0) + 1;
+            if(b.manager) managers[b.manager] = (managers[b.manager] || 0) + 1;
+        });
+
+        var rDiv = document.getElementById('ibk-region-filters');
+        rDiv.innerHTML = '';
+        addIbkChip(rDiv, '전체', 'all', true, function(){ setIbkRegion('all'); }, '#0051af');
+        Object.keys(regions).sort().forEach(function(r){
+            addIbkChip(rDiv, r + ' (' + regions[r] + ')', r, false, function(){ setIbkRegion(r); }, '#0051af');
+        });
+
+        var mDiv = document.getElementById('ibk-manager-filters');
+        mDiv.innerHTML = '';
+        addIbkChip(mDiv, '전체', 'all', true, function(){ setIbkManager('all'); }, '#0051af');
+        Object.keys(managers).sort().forEach(function(m){
+            addIbkChip(mDiv, m + ' (' + managers[m] + ')', m, false, function(){ setIbkManager(m); }, '#0051af');
+        });
+
+        var noteChip = document.getElementById('ibk-note-filter');
+        noteChip.onclick = function(){
+            ibkNoteOnly = !ibkNoteOnly;
+            if(ibkNoteOnly){
+                noteChip.classList.add('active');
+                noteChip.style.background = '#d97706';
+                noteChip.style.color = 'white';
+            } else {
+                noteChip.classList.remove('active');
+                noteChip.style.background = 'white';
+                noteChip.style.color = '#d97706';
+            }
+            applyFilters();
+        };
+    }
+    function addIbkChip(parent, text, val, active, onClick, activeColor){
+        var c = document.createElement('span');
+        c.className = 'chip' + (active ? ' active' : '');
+        c.textContent = text;
+        c.dataset.val = val;
+        c.dataset.activeColor = activeColor;
+        if(active){
+            c.style.background = activeColor;
+            c.style.borderColor = activeColor;
+            c.style.color = 'white';
+        }
+        c.onclick = onClick;
+        parent.appendChild(c);
+    }
+    function setIbkRegion(val){
+        ibkRegionFilter = val;
+        document.querySelectorAll('#ibk-region-filters .chip').forEach(function(c){
+            var on = c.dataset.val === val;
+            c.classList.toggle('active', on);
+            if(on){ c.style.background = c.dataset.activeColor; c.style.color = 'white'; }
+            else { c.style.background = 'white'; c.style.color = ''; }
+        });
+        applyFilters();
+    }
+    function setIbkManager(val){
+        ibkManagerFilter = val;
+        document.querySelectorAll('#ibk-manager-filters .chip').forEach(function(c){
+            var on = c.dataset.val === val;
+            c.classList.toggle('active', on);
+            if(on){ c.style.background = c.dataset.activeColor; c.style.color = 'white'; }
+            else { c.style.background = 'white'; c.style.color = ''; }
+        });
+        applyFilters();
+    }
+
+    // ============================================================
+    // 필터 적용
+    // ============================================================
+    function applyFilters(){
+        var visible = 0;
+        allMarkers.forEach(function(m){
+            var ok = true;
+
+            // 1. 은행 필터
+            if(bankVisible[m._bankName] === false) ok = false;
+
+            // 2. 검색
+            if(ok && searchKeyword){
+                var hay = (m._branchName || '').toLowerCase();
+                if(m._isIBK){
+                    var b = m._ibkData;
+                    hay += ' ' + (b.region || '') + ' ' + (b.manager || '') +
+                           ' ' + (b.sido || '') + ' ' + (b.sigungu || '');
+                } else {
+                    hay += ' ' + (m._props['지번주소'] || '') + ' ' + (m._props['도로명'] || '');
+                }
+                if(hay.toLowerCase().indexOf(searchKeyword) === -1) ok = false;
+            }
+
+            // 3. IBK 전용 필터 (IBK 마커에만 적용)
+            if(ok && m._isIBK){
+                var b = m._ibkData;
+                if(ibkRegionFilter !== 'all' && b.region !== ibkRegionFilter) ok = false;
+                if(ok && ibkManagerFilter !== 'all' && b.manager !== ibkManagerFilter) ok = false;
+                if(ok && ibkNoteOnly && !(b.note_branch || b.note_manager)) ok = false;
+            }
+
+            if(ok){
+                if(!map.hasLayer(m)) map.addLayer(m);
+                visible++;
+            } else {
+                if(map.hasLayer(m)) map.removeLayer(m);
+            }
+        });
+        document.getElementById('visible-count').textContent = visible.toLocaleString();
+        updateList();
+    }
+
+    // ============================================================
+    // 사이드 목록
+    // ============================================================
+    function updateList(){
+        var c = document.getElementById('list-container');
+        var bounds = map.getBounds();
+        var items = [];
+        allMarkers.forEach(function(m){
+            if(map.hasLayer(m) && bounds.contains(m.getLatLng())) items.push(m);
+        });
+        items.sort(function(a, b){
+            return (a._branchName || '').localeCompare(b._branchName || '', 'ko');
+        });
+
+        if(!items.length){
+            c.innerHTML = '<div class="empty-state">화면 내 표시할 지점이 없습니다</div>';
+            return;
+        }
+
+        var html = '';
+        var max = Math.min(items.length, 200);
+        for(var i = 0; i < max; i++){
+            var m = items[i];
+            var col = getBankColor(m._bankName);
+            html += '<div class="list-item" onclick="focusMarkerById(' + m._leaflet_id + ')">';
+            html += '<span class="bank-badge" style="background:' + col + ';">' + escHtml(m._bankName) + '</span>';
+            html += '<div class="name">' + escHtml(m._branchName) + '</div>';
+
+            if(m._isIBK){
+                var b = m._ibkData;
+                html += '<div class="meta">' + escHtml(b.region || '') + ' · ' +
+                        escHtml(b.sigungu || '') +
+                        (b.group ? ' · ' + escHtml(b.group) : '') + '</div>';
+                if(b.manager) html += '<div class="ibk-info">👤 ' + escHtml(b.manager) + '</div>';
+                var notePreview = (b.note_branch || b.note_manager || '').substring(0, 30);
+                if(notePreview){
+                    html += '<div class="note-preview">📝 ' + escHtml(notePreview) +
+                            (notePreview.length >= 30 ? '…' : '') + '</div>';
+                }
+            } else {
+                var addr = m._props['지번주소'] || m._props['도로명'] || '';
+                html += '<div class="meta">' + escHtml(addr) + '</div>';
+            }
+
+            html += '</div>';
+        }
+        if(items.length > 200) html += '<div class="empty-state">외 ' + (items.length - 200) + '건</div>';
+        c.innerHTML = html;
+    }
+    window.focusMarkerById = function(id){
+        map.eachLayer(function(l){
+            if(l._leaflet_id === id){
+                map.setView(l.getLatLng(), 16);
+                l.fire('click');
+            }
+        });
+        var panel = document.getElementById('side-panel');
+        if(window.innerWidth <= 768) panel.classList.remove('open');
+    };
+    map.on('moveend zoomend', updateList);
+
+    // ============================================================
+    // 라벨 토글 컨트롤
+    // ============================================================
     (function(){
-        var C=L.Control.extend({options:{position:'topright'},onAdd:function(){
-            var d=L.DomUtil.create('div','label-toggle-ctrl');
-            d.innerHTML='<button id="btn-lbl-toggle" title="라벨 표시/숨김">🏷️ 라벨</button><button id="btn-lbl-reset" title="위치 초기화" style="color:#e53e3e;">↺ 초기화</button>';
-            L.DomEvent.disableClickPropagation(d);
-            d.querySelector('#btn-lbl-toggle').onclick=function(){
-                labelsVisible=!labelsVisible;
-                if(labelsVisible){map.getContainer().classList.remove('labels-hidden');this.style.opacity='1';}
-                else{map.getContainer().classList.add('labels-hidden');this.style.opacity='0.5';}
-            };
-            d.querySelector('#btn-lbl-reset').onclick=function(){
-                tooltipOffsets={};Object.keys(connectorLines).forEach(function(k){map.removeLayer(connectorLines[k]);});connectorLines={};
-                allMarkers.forEach(function(m){if(m.getTooltip){m.unbindTooltip();var p=m._props||{},lbl=buildBankLabel(p);
-                    if(lbl){m.bindTooltip(lbl,{permanent:true,direction:'top',className:'bank-label',offset:[0,-12],interactive:true});
-                    m.on('tooltipopen',function(){setTimeout(function(){makeDraggableTooltip(m);},50);});}}});
-            };
-            return d;
-        }});
+        var C = L.Control.extend({
+            options: { position: 'topright' },
+            onAdd: function(){
+                var d = L.DomUtil.create('div', 'label-toggle-ctrl');
+                d.innerHTML = '<button id="btn-lbl">🏷️ 라벨</button>';
+                L.DomEvent.disableClickPropagation(d);
+                var visible = true;
+                d.querySelector('#btn-lbl').onclick = function(){
+                    visible = !visible;
+                    document.getElementById('map').classList.toggle('labels-hidden', !visible);
+                    this.style.opacity = visible ? '1' : '0.5';
+                };
+                return d;
+            }
+        });
         map.addControl(new C());
     })();
 
-    applyFilters();setTimeout(updateAllConnectors,500);
+    // ============================================================
+    // 모바일 드로어
+    // ============================================================
+    (function(){
+        var panel = document.getElementById('side-panel');
+        document.getElementById('mobile-toggle').onclick = function(){ panel.classList.add('open'); };
+        document.getElementById('panel-overlay').onclick = function(){ panel.classList.remove('open'); };
+    })();
 
-    // ========== 초기 서버 동기화 (페이지 로드 시) ==========
-    (function initialSync(){
-        setSyncStatus('pending', '⏳ 서버에서 데이터 로드 중…');
-        apiGet().then(function(serverData){
-            if(!serverData){
-                setSyncStatus('err', '⚠ 서버 응답 없음 (로컬 데이터 사용)');
-                return;
-            }
-            var sm = serverData.managers || {};
-            var sv = serverData.visits || {};
+    // ============================================================
+    // 유틸
+    // ============================================================
+    function escHtml(s){
+        return String(s == null ? '' : s)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+    function escAttr(s){ return escHtml(s); }
 
-            // 로컬에만 있는 데이터 → 서버로 푸시 (최초 마이그레이션)
-            Object.keys(managerData).forEach(function(mid){
-                if(!(mid in sm) && managerData[mid]) apiSave('manager', mid, managerData[mid]);
-            });
-            Object.keys(visitData).forEach(function(mid){
-                if(!(mid in sv)) apiSave('visit', mid, visitData[mid]);
-            });
+    // ============================================================
+    // 초기 마커 생성
+    // ============================================================
+    if(typeof json_bank_1st !== 'undefined') createBankMarkers(json_bank_1st, '1st');
+    if(typeof json_bank_2nd !== 'undefined') createBankMarkers(json_bank_2nd, '2nd');
+    createIbkMarkers();
+    buildIbkFilterChips();
+    applyFilters();
 
-            // 서버 데이터를 로컬에 머지 (서버 우선)
-            Object.keys(sm).forEach(function(mid){ managerData[mid] = sm[mid]; });
-            Object.keys(sv).forEach(function(mid){ visitData[mid] = sv[mid]; });
-            saveManagerData(managerData);
-            saveVisitData(visitData);
-
-            // UI 갱신
-            allMarkers.forEach(function(m){
-                if(m.getTooltip && m.getTooltip()) refreshLabel(m, false);
+    // ============================================================
+    // IBK 서버 동기화 (페이지 로드 시 + 30초 주기)
+    // ============================================================
+    function syncIbkFromServer(){
+        setSync('pending', '⏳ IBK 서버 로드 중…');
+        apiLoad().then(function(res){
+            if(!res.ok) throw new Error(res.error || '응답 오류');
+            var serverData = res.data;
+            serverData.forEach(function(sb){
+                var local = ibkByName[sb.name];
+                if(local){
+                    if(sb.lat) local.lat = sb.lat;
+                    if(sb.lng) local.lng = sb.lng;
+                    local.note_branch = sb.note_branch || '';
+                    local.note_manager = sb.note_manager || '';
+                    local.visit_date = sb.visit_date || '';
+                    local.manager = sb.manager || local.manager;
+                    local.history = sb.history || local.history;
+                    local.reg_status = sb.reg_status || '';
+                }
             });
             applyFilters();
-            setSyncStatus('ok', '✓ 서버 동기화 완료 ' + new Date().toLocaleTimeString('ko-KR'));
+            setSync('ok', '✓ IBK 동기화 완료 ' + new Date().toLocaleTimeString('ko-KR'));
         }).catch(function(err){
-            console.warn('서버 로드 실패:', err);
-            setSyncStatus('err', '⚠ 서버 연결 실패 (오프라인 모드)');
+            console.warn('IBK 서버 로드 실패:', err);
+            setSync('err', '⚠ IBK 서버 연결 실패');
         });
-    })();
+    }
+    syncIbkFromServer();
+    setInterval(syncIbkFromServer, 30000);
     </script>
 </body>
 </html>
