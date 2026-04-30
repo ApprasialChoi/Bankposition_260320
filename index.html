@@ -28,6 +28,10 @@
         .panel-header .subtitle { font-size: 11px; opacity: 0.8; }
         .panel-count { font-size: 13px; margin-top: 8px; font-weight: 600; }
         .panel-count span { color: #fbd38d; }
+        .sync-status { font-size: 10px; margin-top: 4px; opacity: 0.85; }
+        .sync-status.ok { color: #9ae6b4; }
+        .sync-status.err { color: #feb2b2; }
+        .sync-status.pending { color: #fbd38d; }
         .filter-section { padding: 12px 16px; border-bottom: 1px solid #edf2f7; }
         .filter-section label { font-size: 11px; font-weight: 600; color: #718096; display: block; margin-bottom: 6px; }
         .filter-row { display: flex; flex-wrap: wrap; gap: 4px; }
@@ -245,6 +249,7 @@
             <h1>🏦 은행 지점 지도</h1>
             <div class="subtitle">서울 · 인천 · 경기 은행 지점 현황</div>
             <div class="panel-count">표시 중: <span id="visible-count">0</span>건</div>
+            <div class="sync-status pending" id="sync-status">⏳ 서버 연결 중…</div>
         </div>
         <div class="filter-section">
             <label>👥 팀원별 담당지역 (IBK기업은행)</label>
@@ -289,6 +294,43 @@
     <script src="data/bank_1st.js"></script>
     <script src="data/bank_2nd.js"></script>
     <script>
+    // ========== 서버 동기화 설정 ==========
+    var API_URL = 'https://script.google.com/macros/s/AKfycbw3sAQHnRt_B6MJRFQ-QykMZ3gzr8ZsmNnq371tyjlj7KFxIUJmK6JJzdwj9B7BIyIp/exec';
+    var API_TOKEN = 'IBK15520!';
+
+    function setSyncStatus(state, msg){
+        var el = document.getElementById('sync-status');
+        if(!el) return;
+        el.className = 'sync-status ' + state;
+        el.textContent = msg;
+    }
+
+    function apiGet(){
+        var url = API_URL + '?token=' + encodeURIComponent(API_TOKEN) + '&action=load';
+        return fetch(url, { method: 'GET' })
+            .then(function(r){
+                if(!r.ok) throw new Error('HTTP ' + r.status);
+                return r.json();
+            });
+    }
+
+    // POST는 Content-Type을 text/plain으로 보내 CORS preflight 회피 (Apps Script에서 e.postData.contents로 받음)
+    function apiSave(type, mid, value){
+        var payload = { token: API_TOKEN, action: 'save', type: type, mid: mid, value: value };
+        setSyncStatus('pending', '💾 저장 중…');
+        return fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(payload)
+        }).then(function(r){
+            if(!r.ok) throw new Error('HTTP ' + r.status);
+            setSyncStatus('ok', '✓ 동기화 완료 ' + new Date().toLocaleTimeString('ko-KR'));
+        }).catch(function(err){
+            console.warn('서버 저장 실패:', err);
+            setSyncStatus('err', '⚠ 서버 저장 실패 (로컬 저장됨)');
+        });
+    }
+
     // ========== teamAssignments 안전장치 (파일 로드 실패 시) ==========
     if (typeof teamAssignments === 'undefined') {
         console.warn('team_assignments.js 파일을 찾을 수 없습니다. 빈 객체로 초기화합니다.');
@@ -318,7 +360,7 @@
     };
     function getBankColor(n){ return BANK_COLORS[n]||'#888'; }
 
-    // ========== localStorage 담당자 저장 ==========
+    // ========== localStorage 담당자 저장 (캐시) ==========
     var STORAGE_KEY = 'bankmap_managers';
     function loadManagerData(){
         try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch(e){ return {}; }
@@ -331,9 +373,10 @@
     function setManager(mid, val){
         if(val) managerData[mid] = val; else delete managerData[mid];
         saveManagerData(managerData);
+        apiSave('manager', mid, val || '');
     }
 
-    // ========== localStorage 방문 데이터 저장 ==========
+    // ========== localStorage 방문 데이터 저장 (캐시) ==========
     var VISIT_STORAGE_KEY = 'bankmap_visits';
     function loadVisitData(){
         try { return JSON.parse(localStorage.getItem(VISIT_STORAGE_KEY)) || {}; } catch(e){ return {}; }
@@ -350,6 +393,7 @@
             visitData[mid] = obj;
         }
         saveVisitData(visitData);
+        apiSave('visit', mid, obj);
     }
 
     var map = L.map('map',{zoomControl:true,maxZoom:19,minZoom:7,attributionControl:false}).setView([37.5,127.0],10);
@@ -424,7 +468,7 @@
         setTimeout(function(){ box.classList.remove('bounce-anim'); }, 800);
     }
 
-    // ========== 팀원 매칭 함수 (IBK기업은행 점포 → 어느 팀원 담당?) ==========
+    // ========== 팀원 매칭 함수 ==========
     function getTeamForBranch(props){
         if((props['은행명']||'') !== 'IBK기업은행') return null;
         var addr = (props['지번주소']||'') + ' ' + (props['도로명']||'');
@@ -440,13 +484,12 @@
     function matchesTeam(props, teamName){
         if(teamName === 'all') return true;
         if(teamName === 'unassigned'){
-            // IBK인데 어떤 팀원도 매칭 안 되는 경우
             return (props['은행명']||'') === 'IBK기업은행' && getTeamForBranch(props) === null;
         }
         return getTeamForBranch(props) === teamName;
     }
 
-    // ========== 라벨 빌드 (담당평가사 + 담당자 + 방문상태 + 팀원 포함) ==========
+    // ========== 라벨 빌드 ==========
     function buildBankLabel(p){
         var b=p['은행명']||'',n=p['점포명']||'',c=getBankColor(b);if(!n)return'';
         var mid=getMid(p), mgr=getManager(mid), ev=p['담당평가사']||'';
@@ -473,7 +516,7 @@
         return html;
     }
 
-    // ========== 라벨 갱신 (특정 마커) ==========
+    // ========== 라벨 갱신 ==========
     function refreshLabel(layer, doBounce){
         var p=layer._props||{}, mid=getMid(p);
         var off=tooltipOffsets[mid]?[tooltipOffsets[mid].x,tooltipOffsets[mid].y]:[0,-12];
@@ -503,7 +546,6 @@
         var div = document.getElementById('team-filters');
         var infoBar = document.getElementById('team-info-bar');
 
-        // "전체" 칩
         var allChip = document.createElement('span');
         allChip.className = 'team-chip active';
         allChip.style.background = '#1a365d';
@@ -513,7 +555,6 @@
         allChip.onclick = function(){ window._setTeamFilter('all'); };
         div.appendChild(allChip);
 
-        // 팀원별 칩
         Object.keys(teamAssignments).forEach(function(name){
             var info = teamAssignments[name];
             var chip = document.createElement('span');
@@ -526,7 +567,6 @@
             div.appendChild(chip);
         });
 
-        // "미배정" 칩 (담당자 없는 IBK)
         var noneChip = document.createElement('span');
         noneChip.className = 'team-chip';
         noneChip.style.borderColor = '#a0aec0';
@@ -538,7 +578,6 @@
 
         function setTeamFilter(val){
             teamFilter = val;
-            // 모든 칩 비활성화
             document.querySelectorAll('#team-filters .team-chip').forEach(function(c){
                 c.classList.remove('active');
                 var t = c.dataset.team;
@@ -554,7 +593,6 @@
                 }
             });
 
-            // 활성 칩 표시
             if(val === 'all'){
                 allChip.classList.add('active');
                 allChip.style.background = '#1a365d';
@@ -684,7 +722,6 @@
                 var b=f.properties['은행명']||'',c=getBankColor(b);
                 var m=L.circleMarker(ll,{radius:6,fillColor:c,color:'#fff',weight:1.5,fillOpacity:0.85});
 
-                // IBK기업은행이면 팀원 색상으로 테두리 강조
                 if(b === 'IBK기업은행'){
                     var tName = getTeamForBranch(f.properties);
                     if(tName && teamAssignments[tName]){
@@ -819,19 +856,14 @@
             var mgrLow=mgr.toLowerCase();
             var v=getVisit(mid);
 
-            // 은행 필터 + 텍스트 검색
             var ok=bankVisible[b]!==false&&(!addrKeyword||a.indexOf(addrKeyword)!==-1||r.indexOf(addrKeyword)!==-1||n.indexOf(addrKeyword)!==-1||mgrLow.indexOf(addrKeyword)!==-1);
 
-            // 팀원 필터
             if(ok) ok = matchesTeam(m._props, teamFilter);
 
-            // 담당평가사 필터
             if(ok && evalFilter==='o') ok=(ev==='O');
             if(ok && evalFilter==='x') ok=(ev==='X');
-            // 담당자 유무 필터
             if(ok && mgrFilter==='yes') ok=!!mgr;
             if(ok && mgrFilter==='no') ok=!mgr;
-            // 방문 필터
             if(ok && visitFilter==='plan') ok=!!v.planned;
             if(ok && visitFilter==='done') ok=!!v.visited;
             if(ok && visitFilter==='none') ok=(!v.planned && !v.visited);
@@ -915,6 +947,43 @@
     })();
 
     applyFilters();setTimeout(updateAllConnectors,500);
+
+    // ========== 초기 서버 동기화 (페이지 로드 시) ==========
+    (function initialSync(){
+        setSyncStatus('pending', '⏳ 서버에서 데이터 로드 중…');
+        apiGet().then(function(serverData){
+            if(!serverData){
+                setSyncStatus('err', '⚠ 서버 응답 없음 (로컬 데이터 사용)');
+                return;
+            }
+            var sm = serverData.managers || {};
+            var sv = serverData.visits || {};
+
+            // 로컬에만 있는 데이터 → 서버로 푸시 (최초 마이그레이션)
+            Object.keys(managerData).forEach(function(mid){
+                if(!(mid in sm) && managerData[mid]) apiSave('manager', mid, managerData[mid]);
+            });
+            Object.keys(visitData).forEach(function(mid){
+                if(!(mid in sv)) apiSave('visit', mid, visitData[mid]);
+            });
+
+            // 서버 데이터를 로컬에 머지 (서버 우선)
+            Object.keys(sm).forEach(function(mid){ managerData[mid] = sm[mid]; });
+            Object.keys(sv).forEach(function(mid){ visitData[mid] = sv[mid]; });
+            saveManagerData(managerData);
+            saveVisitData(visitData);
+
+            // UI 갱신
+            allMarkers.forEach(function(m){
+                if(m.getTooltip && m.getTooltip()) refreshLabel(m, false);
+            });
+            applyFilters();
+            setSyncStatus('ok', '✓ 서버 동기화 완료 ' + new Date().toLocaleTimeString('ko-KR'));
+        }).catch(function(err){
+            console.warn('서버 로드 실패:', err);
+            setSyncStatus('err', '⚠ 서버 연결 실패 (오프라인 모드)');
+        });
+    })();
     </script>
 </body>
 </html>
