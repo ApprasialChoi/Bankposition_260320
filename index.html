@@ -93,9 +93,21 @@
             margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;
         }
         .history-table { width: 100%; font-size: 11px; border-collapse: collapse; margin-top: 4px; }
-        .history-table th, .history-table td { padding: 4px 6px; border-bottom: 1px solid #edf2f7; text-align: left; }
+        .history-table th, .history-table td { padding: 4px 5px; border-bottom: 1px solid #edf2f7; text-align: left; vertical-align: middle; }
         .history-table th { background: #f7fafc; color: #718096; font-weight: 600; font-size: 10px; }
+        .history-table td.col-note { padding: 2px 4px; }
+        .history-table .row-note-input {
+            width: 100%; padding: 3px 6px; border: 1px solid transparent; border-radius: 4px;
+            font-size: 11px; outline: none; font-family: inherit; background: transparent;
+            transition: border-color 0.15s, background 0.15s;
+        }
+        .history-table .row-note-input:hover { border-color: #cbd5e0; background: #fafbff; }
+        .history-table .row-note-input:focus { border-color: #0051af; background: #fff; }
+        .history-table .row-note-input.saving { background: #fffbeb; border-color: #f59e0b; }
+        .history-table .row-note-input.saved { background: #d1fae5; border-color: #10b981; }
+        .history-table .row-note-input.err { background: #fee2e2; border-color: #ef4444; }
         .history-empty { font-size: 11px; color: #a0aec0; font-style: italic; }
+        .history-hint { font-size: 10px; color: #a0aec0; margin-top: 4px; font-style: italic; }
 
         .note-edit { display: flex; gap: 6px; margin-top: 4px; }
         .note-edit textarea {
@@ -152,6 +164,11 @@
             border-radius: 3px;
             display: inline-block;
             margin-top: 2px;
+        }
+        .label-box .lbl-visit-done {
+            font-size: 8px; font-weight: 700; color: #059669; background: #d1fae5;
+            padding: 0 4px; border-radius: 2px; border: 1px solid #34d399;
+            display: inline-block; margin-top: 2px; margin-left: 3px;
         }
         .labels-hidden .bank-label { display: none !important; }
 
@@ -216,11 +233,17 @@
             <div class="ibk-title">🏦 IBK기업은행 전용 필터</div>
             <label>지역본부</label>
             <div class="filter-row" id="ibk-region-filters"></div>
-            <label>담당자</label>
+            <label>담당자 <span style="color:#a0aec0;font-weight:400;">(예정/완료)</span></label>
             <div class="filter-row" id="ibk-manager-filters"></div>
-            <label>비고</label>
+            <label>방문 상태</label>
             <div class="filter-row">
-                <span class="chip" id="ibk-note-filter" style="color:#d97706;border-color:#f59e0b;">📝 비고 있음만</span>
+                <span class="chip active" id="ibk-visit-all" data-val="all" style="background:#0051af;border-color:#0051af;color:white;">전체</span>
+                <span class="chip" id="ibk-visit-planned" data-val="planned" style="color:#d97706;border-color:#f59e0b;">📋 방문예정만</span>
+                <span class="chip" id="ibk-visit-done" data-val="done" style="color:#059669;border-color:#34d399;">✅ 방문완료만</span>
+            </div>
+            <label>접수이력</label>
+            <div class="filter-row">
+                <span class="chip" id="ibk-stale-filter" style="color:#dc2626;border-color:#f87171;">⚠️ 1년 이내 접수이력 없음</span>
             </div>
         </div>
 
@@ -242,7 +265,7 @@
     // ============================================================
     // 설정 (IBK 전용 Apps Script)
     // ============================================================
-    var API_URL = 'https://script.google.com/macros/s/AKfycbwhXSrlElhN59TrRtxCEDuVUx0snWPMPyrdCH7j3yYUNLCAlcWY8m6lu1hJIRrPZ1l0/exec';
+    var API_URL = 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec';
     var API_TOKEN = 'IBK15520!';
 
     function setSync(state, msg){
@@ -387,7 +410,7 @@
     function createIbkMarkers(){
         ibkData.forEach(function(b){
             if(!b.lat || !b.lng) return;
-            var c = getBankColor('IBK기업은행');
+            var c = ibkMarkerColor(b);  // 방문여부에 따라 색 결정
 
             var m = L.circleMarker([b.lat, b.lng], {
                 radius: 6, fillColor: c, color: '#fff',
@@ -399,7 +422,7 @@
             m._isIBK = true;
             m._ibkData = b;
 
-            m.bindTooltip(buildLabel('IBK기업은행', b.name), {
+            m.bindTooltip(buildIbkLabel(b), {
                 permanent: true, direction: 'top',
                 className: 'bank-label', offset: [0, -10]
             });
@@ -411,6 +434,33 @@
             allMarkers.push(m);
             ibkMarkers[b.name] = m;
             m.addTo(map);
+        });
+    }
+
+    // IBK 마커/라벨 동적 갱신 (방문여부 변경 시)
+    function ibkMarkerColor(b){
+        return b.visit_status === 'Y' ? '#059669' : getBankColor('IBK기업은행');
+    }
+    function buildIbkLabel(b){
+        var c = ibkMarkerColor(b);
+        var html = '<div class="label-box" style="border-color:' + c + ';">' +
+            '<div class="lbl-name">' + escHtml(b.name) + '</div>' +
+            '<span class="lbl-bank" style="background:' + c + ';">IBK기업은행</span>';
+        if(b.visit_status === 'Y'){
+            html += '<span class="lbl-visit-done">✅ 방문</span>';
+        }
+        html += '</div>';
+        return html;
+    }
+    function refreshIbkMarker(b){
+        var m = ibkMarkers[b.name];
+        if(!m) return;
+        var c = ibkMarkerColor(b);
+        m.setStyle({ fillColor: c });
+        m.unbindTooltip();
+        m.bindTooltip(buildIbkLabel(b), {
+            permanent: true, direction: 'top',
+            className: 'bank-label', offset: [0, -10]
         });
     }
 
@@ -448,6 +498,11 @@
                 '<h3>I. 지점 개요</h3>' +
                 '<div class="info-row"><b>담당자</b> ' + escHtml(b.manager || '-') + '</div>' +
                 '<div class="info-row"><b>등록상태</b> ' + escHtml(b.reg_status || '-') + '</div>' +
+                '<div class="info-row"><b>방문여부</b> ' +
+                    (b.visit_status === 'Y'
+                        ? '<span style="color:#059669;font-weight:700;">✅ 방문완료</span>'
+                        : '<span style="color:#d97706;font-weight:700;">📋 방문예정</span>') +
+                '</div>' +
                 '<div class="visit-row">' +
                     '<b>방문일</b>' +
                     '<input type="date" class="visit-date-input" value="' + escAttr(b.visit_date || '') + '">' +
@@ -459,15 +514,11 @@
                 '</div>' +
             '</div>' +
 
-            // II 시트 정보 + 비고
+            // II 시트 정보 + 이력별 비고 (행 단위 편집)
             '<div class="popup-section">' +
                 '<h3>II. 담당자 개요</h3>' +
                 buildHistoryTable(b.history) +
-                '<div style="margin-top:8px;font-size:11px;color:#4a5568;font-weight:600;">비고 (담당자)</div>' +
-                '<div class="note-edit">' +
-                    '<textarea class="note-manager" placeholder="담당자 관련 비고">' + escHtml(b.note_manager || '') + '</textarea>' +
-                    '<button class="save-btn save-note-manager">저장</button>' +
-                '</div>' +
+                (b.history && b.history.length ? '<div class="history-hint">💡 비고 칸을 클릭해 직접 편집 (자동 저장)</div>' : '') +
             '</div>' +
         '</div>';
 
@@ -486,13 +537,17 @@
             return '<div class="history-empty">정감이력 없음</div>';
         }
         var rows = '<table class="history-table"><thead><tr>' +
-            '<th>년/월</th><th>담당자</th><th>정감</th>' +
+            '<th>년/월</th><th>담당자</th><th>정감</th><th style="width:40%;">비고</th>' +
             '</tr></thead><tbody>';
-        history.forEach(function(h){
+        history.forEach(function(h, idx){
             rows += '<tr>' +
                 '<td>' + (h.year || '') + (h.month ? '.' + h.month : '') + '</td>' +
                 '<td>' + escHtml(h.person || '') + '</td>' +
                 '<td>' + escHtml(h.appraiser || '') + '</td>' +
+                '<td class="col-note">' +
+                    '<input type="text" class="row-note-input" data-row-idx="' + h.rowIdx + '" data-history-idx="' + idx + '" ' +
+                    'value="' + escAttr(h.note || '') + '" placeholder="비고 입력...">' +
+                '</td>' +
             '</tr>';
         });
         rows += '</tbody></table>';
@@ -502,10 +557,9 @@
     function bindIbkPopupEvents(b, marker){
         var noteBranchEl = document.querySelector('.note-branch');
         var btnBranch = document.querySelector('.save-note-branch');
-        var noteMgrEl = document.querySelector('.note-manager');
-        var btnMgr = document.querySelector('.save-note-manager');
         var dateInp = document.querySelector('.visit-date-input');
 
+        // I 시트 지점 비고 (기존 유지)
         if(btnBranch){
             btnBranch.onclick = function(){
                 var val = noteBranchEl.value;
@@ -525,32 +579,69 @@
                     .catch(function(){ btnBranch.disabled = false; });
             };
         }
-        if(btnMgr){
-            btnMgr.onclick = function(){
-                var val = noteMgrEl.value;
-                btnMgr.disabled = true;
-                apiSave({ action: 'save_note', type: 'manager', name: b.name, value: val })
-                    .then(function(){
-                        b.note_manager = val;
-                        updateList();
-                        btnMgr.classList.add('saved');
-                        btnMgr.textContent = '✓ 저장됨';
-                        setTimeout(function(){
-                            btnMgr.classList.remove('saved');
-                            btnMgr.textContent = '저장';
-                            btnMgr.disabled = false;
-                        }, 1200);
-                    })
-                    .catch(function(){ btnMgr.disabled = false; });
-            };
-        }
+
+        // 방문일 (변경 시 visit_status 도 자동으로 Y/N 으로 바뀜 - Code.gs 측에서 처리)
         if(dateInp){
             dateInp.onchange = function(){
-                apiSave({ action: 'save_visit', name: b.name, value: this.value })
-                    .then(function(){ b.visit_date = dateInp.value; })
+                var newDate = this.value;
+                apiSave({ action: 'save_visit', name: b.name, value: newDate })
+                    .then(function(){
+                        b.visit_date = newDate;
+                        b.visit_status = newDate ? 'Y' : 'N';
+                        refreshIbkMarker(b);
+                        // 담당자 칩 카운트도 갱신
+                        rebuildIbkManagerChips();
+                        updateList();
+                    })
                     .catch(function(){});
             };
         }
+
+        // 이력별 비고 행 단위 편집 (자동 저장: blur 또는 Enter)
+        var rowInputs = document.querySelectorAll('.row-note-input');
+        rowInputs.forEach(function(inp){
+            var rowIdx = parseInt(inp.dataset.rowIdx, 10);
+            var historyIdx = parseInt(inp.dataset.historyIdx, 10);
+            var originalVal = inp.value;
+
+            function flashStatus(cls){
+                inp.classList.remove('saving', 'saved', 'err');
+                inp.classList.add(cls);
+                if(cls === 'saved' || cls === 'err'){
+                    setTimeout(function(){ inp.classList.remove(cls); }, 1500);
+                }
+            }
+
+            function saveIfChanged(){
+                var val = inp.value;
+                if(val === originalVal) return;  // 변경 없음
+                inp.classList.remove('saved', 'err');
+                inp.classList.add('saving');
+                apiSave({ action: 'save_history_note', rowIdx: rowIdx, name: b.name, value: val })
+                    .then(function(){
+                        b.history[historyIdx].note = val;
+                        originalVal = val;
+                        flashStatus('saved');
+                        updateList();
+                    })
+                    .catch(function(err){
+                        flashStatus('err');
+                        // 실패 시 원복
+                        inp.value = originalVal;
+                    });
+            }
+
+            inp.addEventListener('blur', saveIfChanged);
+            inp.addEventListener('keydown', function(e){
+                if(e.key === 'Enter'){
+                    e.preventDefault();
+                    inp.blur();  // blur 트리거 → 저장
+                } else if(e.key === 'Escape'){
+                    inp.value = originalVal;
+                    inp.blur();
+                }
+            });
+        });
     }
 
     // ============================================================
@@ -561,7 +652,8 @@
     var searchKeyword = '';
     var ibkRegionFilter = 'all';
     var ibkManagerFilter = 'all';
-    var ibkNoteOnly = false;
+    var ibkVisitFilter = 'all';      // 'all' | 'planned' | 'done'
+    var ibkStaleOnly = false;        // 1년 이내 접수이력 없음만
 
     // ============================================================
     // 은행 필터 칩
@@ -597,14 +689,19 @@
     });
 
     // ============================================================
-    // IBK 전용 필터 칩 (지역본부 / 담당자)
+    // IBK 전용 필터 칩 (지역본부 / 담당자 / 방문상태 / 1년 이내)
     // ============================================================
     function buildIbkFilterChips(){
         var regions = {};
-        var managers = {};
+        var managerStats = {};  // { 김남솔: { total: 5, done: 2, planned: 3 }, ... }
         ibkData.forEach(function(b){
             if(b.region) regions[b.region] = (regions[b.region] || 0) + 1;
-            if(b.manager) managers[b.manager] = (managers[b.manager] || 0) + 1;
+            if(b.manager){
+                if(!managerStats[b.manager]) managerStats[b.manager] = { total: 0, done: 0, planned: 0 };
+                managerStats[b.manager].total++;
+                if(b.visit_status === 'Y') managerStats[b.manager].done++;
+                else managerStats[b.manager].planned++;
+            }
         });
 
         var rDiv = document.getElementById('ibk-region-filters');
@@ -617,21 +714,31 @@
         var mDiv = document.getElementById('ibk-manager-filters');
         mDiv.innerHTML = '';
         addIbkChip(mDiv, '전체', 'all', true, function(){ setIbkManager('all'); }, '#0051af');
-        Object.keys(managers).sort().forEach(function(m){
-            addIbkChip(mDiv, m + ' (' + managers[m] + ')', m, false, function(){ setIbkManager(m); }, '#0051af');
+        Object.keys(managerStats).sort().forEach(function(m){
+            var s = managerStats[m];
+            // 형식: "김남솔 12 (예정 8/완료 4)"
+            var label = m + ' ' + s.total + ' (예' + s.planned + '/완' + s.done + ')';
+            addIbkChip(mDiv, label, m, false, function(){ setIbkManager(m); }, '#0051af');
         });
 
-        var noteChip = document.getElementById('ibk-note-filter');
-        noteChip.onclick = function(){
-            ibkNoteOnly = !ibkNoteOnly;
-            if(ibkNoteOnly){
-                noteChip.classList.add('active');
-                noteChip.style.background = '#d97706';
-                noteChip.style.color = 'white';
+        // 방문 상태 필터 (3개 칩)
+        ['all', 'planned', 'done'].forEach(function(val){
+            var chip = document.getElementById('ibk-visit-' + val);
+            chip.onclick = function(){ setIbkVisit(val); };
+        });
+
+        // 1년 이내 접수이력 없음 토글
+        var staleChip = document.getElementById('ibk-stale-filter');
+        staleChip.onclick = function(){
+            ibkStaleOnly = !ibkStaleOnly;
+            if(ibkStaleOnly){
+                staleChip.classList.add('active');
+                staleChip.style.background = '#dc2626';
+                staleChip.style.color = 'white';
             } else {
-                noteChip.classList.remove('active');
-                noteChip.style.background = 'white';
-                noteChip.style.color = '#d97706';
+                staleChip.classList.remove('active');
+                staleChip.style.background = 'white';
+                staleChip.style.color = '#dc2626';
             }
             applyFilters();
         };
@@ -670,6 +777,61 @@
         });
         applyFilters();
     }
+    // 담당자 칩만 카운트 갱신 (방문여부 변경 시 호출)
+    function rebuildIbkManagerChips(){
+        var managerStats = {};
+        ibkData.forEach(function(b){
+            if(!b.manager) return;
+            if(!managerStats[b.manager]) managerStats[b.manager] = { total: 0, done: 0, planned: 0 };
+            managerStats[b.manager].total++;
+            if(b.visit_status === 'Y') managerStats[b.manager].done++;
+            else managerStats[b.manager].planned++;
+        });
+        document.querySelectorAll('#ibk-manager-filters .chip').forEach(function(c){
+            var name = c.dataset.val;
+            if(name === 'all') return;
+            var s = managerStats[name];
+            if(s){
+                c.textContent = name + ' ' + s.total + ' (예' + s.planned + '/완' + s.done + ')';
+            }
+        });
+    }
+
+    function setIbkVisit(val){
+        ibkVisitFilter = val;
+        var colors = { all: '#0051af', planned: '#d97706', done: '#059669' };
+        ['all', 'planned', 'done'].forEach(function(v){
+            var c = document.getElementById('ibk-visit-' + v);
+            if(v === val){
+                c.classList.add('active');
+                c.style.background = colors[v];
+                c.style.color = 'white';
+            } else {
+                c.classList.remove('active');
+                c.style.background = 'white';
+                c.style.color = colors[v];
+            }
+        });
+        applyFilters();
+    }
+
+    // ============================================================
+    // 1년 이내 접수이력 없음 판정
+    // ============================================================
+    function isStale(b){
+        // history 가 없거나 (정감이력 자체가 없음) 모든 이력이 1년 초과면 stale
+        if(!b.history || !b.history.length) return true;
+        var now = new Date();
+        var oneYearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+        // 가장 최근 이력 찾기 (year, month 기준)
+        for(var i = 0; i < b.history.length; i++){
+            var h = b.history[i];
+            if(!h.year || !h.month) continue;
+            var d = new Date(Number(h.year), Number(h.month) - 1, 1);
+            if(d >= oneYearAgo) return false;  // 최근 1년 내 이력이 하나라도 있으면 not stale
+        }
+        return true;
+    }
 
     // ============================================================
     // 필터 적용
@@ -700,7 +862,13 @@
                 var b = m._ibkData;
                 if(ibkRegionFilter !== 'all' && b.region !== ibkRegionFilter) ok = false;
                 if(ok && ibkManagerFilter !== 'all' && b.manager !== ibkManagerFilter) ok = false;
-                if(ok && ibkNoteOnly && !(b.note_branch || b.note_manager)) ok = false;
+
+                // 방문 상태
+                if(ok && ibkVisitFilter === 'planned' && b.visit_status !== 'N') ok = false;
+                if(ok && ibkVisitFilter === 'done' && b.visit_status !== 'Y') ok = false;
+
+                // 1년 이내 접수이력 없음
+                if(ok && ibkStaleOnly && !isStale(b)) ok = false;
             }
 
             if(ok){
@@ -747,8 +915,30 @@
                 html += '<div class="meta">' + escHtml(b.region || '') + ' · ' +
                         escHtml(b.sigungu || '') +
                         (b.group ? ' · ' + escHtml(b.group) : '') + '</div>';
+
+                // 방문 상태 + 담당자
+                var statusBadges = '';
+                if(b.visit_status === 'Y'){
+                    statusBadges += '<span style="font-size:10px;font-weight:700;color:#059669;background:#d1fae5;padding:1px 6px;border-radius:3px;margin-right:4px;border:1px solid #34d399;">✅ 방문</span>';
+                } else {
+                    statusBadges += '<span style="font-size:10px;font-weight:700;color:#d97706;background:#fef3c7;padding:1px 6px;border-radius:3px;margin-right:4px;border:1px solid #fbbf24;">📋 예정</span>';
+                }
+                if(isStale(b)){
+                    statusBadges += '<span style="font-size:10px;font-weight:700;color:#dc2626;background:#fee2e2;padding:1px 6px;border-radius:3px;border:1px solid #f87171;">⚠️ 1년+</span>';
+                }
+                html += '<div style="margin-top:3px;">' + statusBadges + '</div>';
+
                 if(b.manager) html += '<div class="ibk-info">👤 ' + escHtml(b.manager) + '</div>';
-                var notePreview = (b.note_branch || b.note_manager || '').substring(0, 30);
+
+                var notePreview = '';
+                if(b.note_branch){
+                    notePreview = b.note_branch;
+                } else if(b.history && b.history.length){
+                    for(var hi = b.history.length - 1; hi >= 0; hi--){
+                        if(b.history[hi].note){ notePreview = b.history[hi].note; break; }
+                    }
+                }
+                notePreview = notePreview.substring(0, 30);
                 if(notePreview){
                     html += '<div class="note-preview">📝 ' + escHtml(notePreview) +
                             (notePreview.length >= 30 ? '…' : '') + '</div>';
@@ -839,13 +1029,15 @@
                     if(sb.lat) local.lat = sb.lat;
                     if(sb.lng) local.lng = sb.lng;
                     local.note_branch = sb.note_branch || '';
-                    local.note_manager = sb.note_manager || '';
                     local.visit_date = sb.visit_date || '';
+                    local.visit_status = sb.visit_status || 'N';
                     local.manager = sb.manager || local.manager;
                     local.history = sb.history || local.history;
                     local.reg_status = sb.reg_status || '';
+                    refreshIbkMarker(local);
                 }
             });
+            rebuildIbkManagerChips();
             applyFilters();
             setSync('ok', '✓ IBK 동기화 완료 ' + new Date().toLocaleTimeString('ko-KR'));
         }).catch(function(err){
