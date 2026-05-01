@@ -73,6 +73,83 @@
         .list-item .note-preview { font-size: 11px; color: #d97706; margin-top: 3px; padding: 2px 6px; background: #fef3c7; border-radius: 3px; display: inline-block; }
         .empty-state { padding: 40px 20px; text-align: center; color: #a0aec0; font-size: 13px; }
 
+        /* ===== 히트맵 — 우측 상단 플로팅 패널 ===== */
+        #heat-floating {
+            position: absolute;
+            top: 70px; right: 10px;
+            width: 320px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 8px 28px rgba(0,0,0,0.18);
+            z-index: 1000;
+            display: none;
+            overflow: hidden;
+        }
+        #heat-floating.visible { display: block; }
+        #heat-floating .heat-header {
+            padding: 10px 14px;
+            background: linear-gradient(135deg, #d97706, #f59e0b);
+            color: white;
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 13px; font-weight: 700;
+        }
+        #heat-floating .heat-header .heat-close {
+            background: transparent; border: none; color: white;
+            font-size: 18px; cursor: pointer; padding: 0 6px; line-height: 1;
+        }
+        #heat-floating .heat-body { padding: 12px; max-height: 480px; overflow-y: auto; }
+        .heat-section { margin-bottom: 12px; }
+        .heat-section label {
+            display: block; font-size: 11px; font-weight: 600; color: #718096;
+            margin-bottom: 6px;
+        }
+        .heat-section .heat-search {
+            width: 100%; padding: 6px 10px; border: 1.5px solid #e2e8f0;
+            border-radius: 6px; font-size: 12px; outline: none;
+            font-family: inherit; margin-bottom: 6px;
+        }
+        .heat-section .heat-search:focus { border-color: #d97706; }
+        .heat-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+        .heat-chip {
+            padding: 3px 9px; border-radius: 14px; font-size: 11px; font-weight: 600;
+            cursor: pointer; border: 1.5px solid #e2e8f0; background: white;
+            color: #4a5568; transition: all 0.15s; user-select: none;
+        }
+        .heat-chip:hover { border-color: #d97706; }
+        .heat-chip.active {
+            background: #d97706; color: white; border-color: #d97706;
+        }
+        .heat-chip .cnt {
+            font-size: 10px; opacity: 0.85; margin-left: 3px;
+        }
+        .heat-stats {
+            font-size: 11px; color: #4a5568; padding: 8px 10px;
+            background: #fef3c7; border-radius: 6px;
+            border-left: 3px solid #f59e0b;
+        }
+        .heat-stats b { color: #92400e; }
+        .heat-legend {
+            display: flex; align-items: center; gap: 6px; font-size: 10px;
+            color: #718096; margin-top: 8px;
+        }
+        .heat-legend .gradient {
+            flex: 1; height: 8px; border-radius: 4px;
+            background: linear-gradient(to right,
+                rgba(0,0,255,0.0) 0%,
+                rgba(0,200,255,0.6) 25%,
+                rgba(0,255,100,0.7) 50%,
+                rgba(255,200,0,0.8) 75%,
+                rgba(255,0,0,0.9) 100%);
+        }
+
+        @media (max-width: 768px) {
+            #heat-floating {
+                top: 60px; right: 10px; left: 10px;
+                width: auto; max-width: none;
+            }
+            #heat-floating .heat-body { max-height: 60vh; }
+        }
+
         /* ===== 자료실 — 우측 상단 플로팅 패널 ===== */
         #docs-floating {
             position: absolute;
@@ -139,7 +216,7 @@
             position: absolute;
             top: 70px;          /* 라벨 토글 컨트롤 아래 */
             right: 10px;
-            width: 320px;
+            width: 380px;
             background: white;
             border-radius: 10px;
             box-shadow: 0 8px 28px rgba(0,0,0,0.18);
@@ -177,8 +254,9 @@
         .cal-grid .dow.sun { color: #e53e3e; }
         .cal-grid .dow.sat { color: #2b6cb0; }
         .cal-day {
-            aspect-ratio: 1; display: flex; flex-direction: column; align-items: center;
-            justify-content: flex-start; padding-top: 2px; font-size: 11px; cursor: pointer;
+            min-height: 44px; padding: 3px 2px 4px;
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: flex-start; font-size: 11px; cursor: pointer;
             border-radius: 4px; position: relative; color: #2d3748;
             transition: background 0.15s;
         }
@@ -193,14 +271,20 @@
         .cal-day.selected::before { border-color: transparent; }
         .cal-day.sun { color: #e53e3e; }
         .cal-day.sat { color: #2b6cb0; }
-        .cal-day .dots {
-            display: flex; gap: 2px; margin-top: 1px; flex-wrap: wrap; justify-content: center;
-            max-width: 100%; line-height: 1;
+        .cal-day .name-chips {
+            display: flex; flex-direction: column; gap: 1px; margin-top: 2px;
+            width: 100%; align-items: stretch;
         }
-        .cal-day .dots .dot {
-            width: 4px; height: 4px; border-radius: 50%; display: inline-block;
+        .cal-day .name-chip {
+            font-size: 9px; font-weight: 700; color: white;
+            padding: 1px 3px; border-radius: 3px;
+            text-align: center; line-height: 1.25;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
-        .cal-day.selected .dots .dot { background: white !important; }
+        .cal-day .name-chip.more {
+            background: #cbd5e0 !important; color: #4a5568 !important;
+        }
+        .cal-day.selected .name-chip { box-shadow: 0 0 0 1px white; }
         .cal-events { margin-top: 10px; padding-top: 10px; border-top: 1px solid #edf2f7; }
         .cal-events h4 {
             font-size: 11px; font-weight: 700; color: #4a5568; margin-bottom: 6px;
@@ -229,6 +313,50 @@
         .cal-events-empty {
             text-align: center; color: #a0aec0; font-size: 11px; padding: 12px;
             font-style: italic;
+        }
+
+        /* ===== 월 요약 표 ===== */
+        .cal-summary {
+            margin-top: 12px; padding-top: 10px; border-top: 1px solid #edf2f7;
+        }
+        .cal-summary h4 {
+            font-size: 11px; font-weight: 700; color: #4a5568; margin-bottom: 6px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .cal-summary-table {
+            width: 100%; border-collapse: collapse; font-size: 11px;
+        }
+        .cal-summary-table th, .cal-summary-table td {
+            padding: 4px 5px; border-bottom: 1px solid #edf2f7; text-align: left;
+            vertical-align: top;
+        }
+        .cal-summary-table th {
+            background: #f7fafc; color: #718096; font-weight: 600;
+            font-size: 10px; position: sticky; top: 0;
+        }
+        .cal-summary-table tr { cursor: pointer; transition: background 0.15s; }
+        .cal-summary-table tr:hover { background: #f0f7ff; }
+        .cal-summary-table .sum-date {
+            white-space: nowrap; font-weight: 600; color: #2d3748;
+        }
+        .cal-summary-table .sum-date.sun { color: #e53e3e; }
+        .cal-summary-table .sum-date.sat { color: #2b6cb0; }
+        .cal-summary-table .sum-time {
+            white-space: nowrap; color: #718096; font-size: 10px;
+        }
+        .cal-summary-table .sum-member {
+            white-space: nowrap;
+        }
+        .cal-summary-table .sum-member-chip {
+            display: inline-block; padding: 1px 5px; border-radius: 3px;
+            color: white; font-size: 10px; font-weight: 700;
+        }
+        .cal-summary-table .sum-title {
+            font-weight: 600; color: #2d3748; word-break: break-word;
+        }
+        .cal-summary-empty {
+            text-align: center; color: #a0aec0; padding: 16px;
+            font-size: 11px; font-style: italic;
         }
 
         /* 모바일에서는 화면 거의 전체 차지 */
@@ -522,6 +650,29 @@
     <div id="kakao-map"></div>
     <div id="map"></div>
 
+    <!-- 우측 상단 플로팅 히트맵 패널 -->
+    <div id="heat-floating">
+        <div class="heat-header">
+            <span>🔥 정감 히트맵 (최근 2년)</span>
+            <button class="heat-close" id="heat-close-btn">×</button>
+        </div>
+        <div class="heat-body">
+            <div class="heat-section">
+                <label>정감자 필터</label>
+                <input type="text" class="heat-search" id="heat-search" placeholder="정감자명 검색…">
+                <div class="heat-chips" id="heat-chips"></div>
+            </div>
+            <div class="heat-section">
+                <div class="heat-stats" id="heat-stats">데이터 로드 대기 중…</div>
+                <div class="heat-legend">
+                    <span>적음</span>
+                    <div class="gradient"></div>
+                    <span>많음</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- 우측 상단 플로팅 자료실 패널 -->
     <div id="docs-floating">
         <div class="docs-header">
@@ -573,11 +724,17 @@
                 </h4>
                 <div id="cal-events-list"></div>
             </div>
+            <!-- 월 요약 표 -->
+            <div class="cal-summary">
+                <h4><span id="cal-summary-title">이 달 일정</span></h4>
+                <div id="cal-summary-list"></div>
+            </div>
         </div>
     </div>
 
     <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=231190ac1aca72ada0b739110d8a0eb4"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
     <script src="js/kakao_base.js"></script>
     <script src="data/bank_1st.js"></script>
     <script src="data/bank_2nd.js"></script>
@@ -1289,7 +1446,7 @@
     map.on('moveend zoomend', updateList);
 
     // ============================================================
-    // 라벨 토글 + 캘린더 토글 + 자료실 토글 컨트롤
+    // 라벨 토글 + 캘린더 토글 + 자료실 토글 + 히트맵 토글 컨트롤
     // ============================================================
     (function(){
         var C = L.Control.extend({
@@ -1298,8 +1455,22 @@
                 var d = L.DomUtil.create('div', 'label-toggle-ctrl');
                 d.innerHTML = '<button id="btn-lbl">🏷️ 라벨</button>' +
                               '<button id="btn-cal">📅 캘린더</button>' +
-                              '<button id="btn-docs">📁 자료</button>';
+                              '<button id="btn-docs">📁 자료</button>' +
+                              '<button id="btn-heat">🔥 히트맵</button>';
                 L.DomEvent.disableClickPropagation(d);
+
+                // 다른 패널 닫기 헬퍼
+                function closeOthers(except){
+                    ['cal-floating','docs-floating','heat-floating'].forEach(function(id){
+                        if(id !== except) document.getElementById(id).classList.remove('visible');
+                    });
+                    ['btn-cal','btn-docs','btn-heat'].forEach(function(b){
+                        if(b !== except.replace('-floating','').replace('floating','')){
+                            var bb = document.getElementById(b);
+                            if(bb){ bb.style.background=''; bb.style.color=''; }
+                        }
+                    });
+                }
 
                 // 라벨 토글
                 var visible = true;
@@ -1316,10 +1487,13 @@
                     this.style.background = nowVisible ? '#0051af' : '';
                     this.style.color = nowVisible ? 'white' : '';
                     if(nowVisible){
-                        // 다른 플로팅 패널 닫기
+                        // 다른 패널 닫기
                         document.getElementById('docs-floating').classList.remove('visible');
-                        var btnDocs = document.getElementById('btn-docs');
-                        if(btnDocs){ btnDocs.style.background = ''; btnDocs.style.color = ''; }
+                        document.getElementById('heat-floating').classList.remove('visible');
+                        ['btn-docs','btn-heat'].forEach(function(b){
+                            var bb = document.getElementById(b);
+                            if(bb){ bb.style.background=''; bb.style.color=''; }
+                        });
                         if(!calState.events.length) loadCalendarMonth();
                     }
                 };
@@ -1331,10 +1505,31 @@
                     this.style.background = nowVisible ? '#0051af' : '';
                     this.style.color = nowVisible ? 'white' : '';
                     if(nowVisible){
-                        // 다른 플로팅 패널 닫기
                         document.getElementById('cal-floating').classList.remove('visible');
-                        var btnCal = document.getElementById('btn-cal');
-                        if(btnCal){ btnCal.style.background = ''; btnCal.style.color = ''; }
+                        document.getElementById('heat-floating').classList.remove('visible');
+                        ['btn-cal','btn-heat'].forEach(function(b){
+                            var bb = document.getElementById(b);
+                            if(bb){ bb.style.background=''; bb.style.color=''; }
+                        });
+                    }
+                };
+
+                // 히트맵 토글
+                d.querySelector('#btn-heat').onclick = function(){
+                    var floating = document.getElementById('heat-floating');
+                    var nowVisible = floating.classList.toggle('visible');
+                    this.style.background = nowVisible ? '#d97706' : '';
+                    this.style.color = nowVisible ? 'white' : '';
+                    if(nowVisible){
+                        document.getElementById('cal-floating').classList.remove('visible');
+                        document.getElementById('docs-floating').classList.remove('visible');
+                        ['btn-cal','btn-docs'].forEach(function(b){
+                            var bb = document.getElementById(b);
+                            if(bb){ bb.style.background=''; bb.style.color=''; }
+                        });
+                        showHeatmap();
+                    } else {
+                        hideHeatmap();
                     }
                 };
 
@@ -1343,6 +1538,164 @@
         });
         map.addControl(new C());
     })();
+
+    // ============================================================
+    // 정감 히트맵 (최근 2년)
+    // ============================================================
+    var heatLayer = null;
+    var heatAppraiserStats = {};   // 영업점별 정감자별 카운트: {영업점명: {appraiser: cnt, ...}}
+    var heatAppraiserTotal = {};   // 정감자별 총 카운트: {appraiser: cnt}
+    var selectedAppraiser = '__all__';  // '__all__' = 전체 합산
+
+    // II 시트 history 데이터로부터 정감 카운트 집계 (최근 2년)
+    function buildHeatStats(){
+        heatAppraiserStats = {};
+        heatAppraiserTotal = {};
+        var now = new Date();
+        var twoYearsAgo = new Date(now.getFullYear() - 2, now.getMonth(), 1);
+
+        ibkData.forEach(function(b){
+            if(!b.history || !b.history.length) return;
+            heatAppraiserStats[b.name] = {};
+            b.history.forEach(function(h){
+                if(!h.appraiser || !String(h.appraiser).trim()) return;  // 정감자 없는 행 제외
+                if(!h.year || !h.month) return;
+                var d = new Date(Number(h.year), Number(h.month) - 1, 1);
+                if(d < twoYearsAgo) return;  // 2년 초과 제외
+                var ap = String(h.appraiser).trim();
+                heatAppraiserStats[b.name][ap] = (heatAppraiserStats[b.name][ap] || 0) + 1;
+                heatAppraiserTotal[ap] = (heatAppraiserTotal[ap] || 0) + 1;
+            });
+        });
+    }
+
+    // 정감자 칩 렌더링 (검색 키워드 적용)
+    function renderHeatChips(searchKeyword){
+        var container = document.getElementById('heat-chips');
+        var sorted = Object.keys(heatAppraiserTotal).sort(function(a, b){
+            return heatAppraiserTotal[b] - heatAppraiserTotal[a];  // 건수 많은 순
+        });
+        if(searchKeyword){
+            var kw = searchKeyword.toLowerCase();
+            sorted = sorted.filter(function(a){ return a.toLowerCase().indexOf(kw) !== -1; });
+        }
+
+        var html = '<span class="heat-chip ' + (selectedAppraiser === '__all__' ? 'active' : '') +
+                   '" data-ap="__all__">전체</span>';
+        // 검색 안 했으면 TOP 15만, 검색 시 전체
+        var limit = searchKeyword ? sorted.length : 15;
+        sorted.slice(0, limit).forEach(function(a){
+            var active = selectedAppraiser === a ? 'active' : '';
+            html += '<span class="heat-chip ' + active + '" data-ap="' + escAttr(a) + '">' +
+                    escHtml(a) + '<span class="cnt">(' + heatAppraiserTotal[a] + ')</span></span>';
+        });
+        if(!searchKeyword && sorted.length > 15){
+            html += '<span style="font-size:10px;color:#a0aec0;align-self:center;">+' +
+                    (sorted.length - 15) + '명 (검색 사용)</span>';
+        }
+        container.innerHTML = html;
+
+        container.querySelectorAll('.heat-chip').forEach(function(chip){
+            chip.onclick = function(){
+                selectedAppraiser = this.dataset.ap;
+                renderHeatChips(document.getElementById('heat-search').value.trim());
+                renderHeatLayer();
+            };
+        });
+    }
+
+    // 히트맵 데이터 포인트 빌드 + 레이어 갱신
+    function renderHeatLayer(){
+        var points = [];
+        var maxVal = 0;
+        var totalCount = 0;
+        var branchesWithData = 0;
+
+        ibkData.forEach(function(b){
+            if(!b.lat || !b.lng) return;
+            var stats = heatAppraiserStats[b.name];
+            if(!stats) return;
+            var cnt;
+            if(selectedAppraiser === '__all__'){
+                cnt = 0;
+                Object.keys(stats).forEach(function(a){ cnt += stats[a]; });
+            } else {
+                cnt = stats[selectedAppraiser] || 0;
+            }
+            if(cnt > 0){
+                points.push([b.lat, b.lng, cnt]);
+                if(cnt > maxVal) maxVal = cnt;
+                totalCount += cnt;
+                branchesWithData++;
+            }
+        });
+
+        if(heatLayer){ map.removeLayer(heatLayer); heatLayer = null; }
+
+        if(points.length){
+            heatLayer = L.heatLayer(points, {
+                radius: 35,
+                blur: 25,
+                maxZoom: 13,    // 이 줌 이상에서는 점이 더 분산됨
+                max: Math.max(maxVal, 5),  // 최대값 정규화 (너무 작은 max 방지)
+                gradient: {
+                    0.0: 'rgba(0,0,255,0)',
+                    0.2: 'rgba(0,200,255,0.6)',
+                    0.4: 'rgba(0,255,100,0.7)',
+                    0.6: 'rgba(255,200,0,0.8)',
+                    0.8: 'rgba(255,100,0,0.85)',
+                    1.0: 'rgba(255,0,0,0.9)'
+                }
+            }).addTo(map);
+        }
+
+        // 통계 텍스트
+        var stats = document.getElementById('heat-stats');
+        var who = selectedAppraiser === '__all__' ? '전체' : selectedAppraiser;
+        if(totalCount === 0){
+            stats.innerHTML = '<b>' + escHtml(who) + '</b> — 최근 2년간 정감 이력이 없습니다';
+        } else {
+            stats.innerHTML = '<b>' + escHtml(who) + '</b> · 총 <b>' + totalCount + '건</b> · ' +
+                              '영업점 <b>' + branchesWithData + '곳</b> · ' +
+                              '최다 <b>' + maxVal + '건</b>';
+        }
+    }
+
+    function showHeatmap(){
+        if(!Object.keys(heatAppraiserStats).length) buildHeatStats();
+        renderHeatChips('');
+        renderHeatLayer();
+    }
+    function hideHeatmap(){
+        if(heatLayer){ map.removeLayer(heatLayer); heatLayer = null; }
+    }
+
+    // 검색
+    document.getElementById('heat-search').addEventListener('input', function(){
+        renderHeatChips(this.value.trim());
+    });
+
+    // 닫기 버튼
+    document.getElementById('heat-close-btn').onclick = function(){
+        document.getElementById('heat-floating').classList.remove('visible');
+        var btn = document.getElementById('btn-heat');
+        if(btn){ btn.style.background = ''; btn.style.color = ''; }
+        hideHeatmap();
+    };
+
+    // 데이터가 갱신되면 (서버 동기화 후) 히트맵 통계도 재집계
+    // syncIbkFromServer 끝에 buildHeatStats 호출되도록 훅 추가
+    var __originalSync = syncIbkFromServer;
+    syncIbkFromServer = function(){
+        return __originalSync.apply(this, arguments) ; // promise 무관하게 다음 동기화 사이클에 반영됨
+    };
+    // 더 단순하게: 히트맵이 켜져있을 때만 갱신하도록 setInterval 추가
+    setInterval(function(){
+        if(document.getElementById('heat-floating').classList.contains('visible')){
+            buildHeatStats();
+            renderHeatLayer();
+        }
+    }, 30000);
 
     // ============================================================
     // 자료실 트리 동작
@@ -1537,22 +1890,27 @@
             var dowCls = dow === 0 ? 'sun' : (dow === 6 ? 'sat' : '');
             var todayCls = ymd === todayYMD ? 'today' : '';
             var selCls = ymd === calState.selectedDate ? 'selected' : '';
-            // 이 날짜의 이벤트 색상 점들 (담당자별)
+
+            // 이 날짜의 담당자 목록 (중복 제거, 등록 순서 유지)
             var dayEvents = calState.events.filter(function(e){ return e.date === ymd; });
-            var membersInDay = {};
+            var seenMembers = [];
             dayEvents.forEach(function(e){
-                var m = e.member || '_';
-                membersInDay[m] = (MEMBER_HEX[m] || '#a0aec0');
+                var m = e.member || '미지정';
+                if(seenMembers.indexOf(m) === -1) seenMembers.push(m);
             });
-            var dotsHtml = '';
-            var memList = Object.keys(membersInDay).slice(0, 4);
-            memList.forEach(function(m){
-                dotsHtml += '<span class="dot" style="background:' + membersInDay[m] + ';"></span>';
+
+            var chipsHtml = '';
+            var maxShow = 3;  // 셀당 최대 3명까지 풀네임으로 표시
+            seenMembers.slice(0, maxShow).forEach(function(m){
+                var color = MEMBER_HEX[m] || '#a0aec0';
+                chipsHtml += '<span class="name-chip" style="background:' + color + ';">' + escHtml(m) + '</span>';
             });
-            if(Object.keys(membersInDay).length > 4) dotsHtml += '<span class="dot" style="background:#cbd5e0;"></span>';
+            if(seenMembers.length > maxShow){
+                chipsHtml += '<span class="name-chip more">+' + (seenMembers.length - maxShow) + '</span>';
+            }
 
             html += '<div class="cal-day ' + dowCls + ' ' + todayCls + ' ' + selCls + '" data-ymd="' + ymd + '">' +
-                d + '<div class="dots">' + dotsHtml + '</div></div>';
+                d + '<div class="name-chips">' + chipsHtml + '</div></div>';
         }
 
         // 다음 달 채우기 (총 6주 = 42칸 맞추기)
@@ -1616,6 +1974,75 @@
             el.onclick = function(){
                 var id = this.dataset.id;
                 var ev = dayEvents.find(function(e){ return e.id === id; });
+                if(ev) openCalModal(ev);
+            };
+        });
+
+        // 월 요약 표도 같이 갱신
+        renderMonthSummary();
+    }
+
+    // ========== 월 요약 표 ==========
+    function renderMonthSummary(){
+        var titleEl = document.getElementById('cal-summary-title');
+        var listEl = document.getElementById('cal-summary-list');
+        if(!titleEl || !listEl) return;
+
+        titleEl.textContent = (calState.viewMonth + 1) + '월 일정 요약';
+
+        // 이번 달 이벤트만 필터
+        var ym = calState.viewYear + '-' + String(calState.viewMonth + 1).padStart(2, '0');
+        var monthEvents = calState.events.filter(function(e){
+            return e.date && e.date.indexOf(ym) === 0;
+        });
+
+        if(!monthEvents.length){
+            listEl.innerHTML = '<div class="cal-summary-empty">이번 달 일정이 없습니다</div>';
+            return;
+        }
+
+        // 날짜 → 시간 순 정렬
+        monthEvents.sort(function(a, b){
+            if(a.date !== b.date) return a.date.localeCompare(b.date);
+            if(a.allDay && !b.allDay) return -1;
+            if(!a.allDay && b.allDay) return 1;
+            return (a.startTime || '').localeCompare(b.startTime || '');
+        });
+
+        var html = '<table class="cal-summary-table"><thead><tr>' +
+            '<th>날짜</th><th>시간</th><th>담당자</th><th>일정</th>' +
+            '</tr></thead><tbody>';
+
+        monthEvents.forEach(function(e){
+            var parts = e.date.split('-');
+            var dt = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+            var dow = dt.getDay();
+            var dowName = ['일','월','화','수','목','금','토'][dow];
+            var dowCls = dow === 0 ? 'sun' : (dow === 6 ? 'sat' : '');
+            var dateStr = Number(parts[1]) + '/' + Number(parts[2]) + '(' + dowName + ')';
+            var timeStr = e.allDay ? '종일' : (e.startTime || '');
+            var memColor = MEMBER_HEX[e.member] || '#a0aec0';
+            var memChip = e.member
+                ? '<span class="sum-member-chip" style="background:' + memColor + ';">' + escHtml(e.member) + '</span>'
+                : '<span style="color:#a0aec0;font-size:10px;">-</span>';
+
+            html += '<tr data-id="' + escAttr(e.id) + '">' +
+                '<td class="sum-date ' + dowCls + '">' + dateStr + '</td>' +
+                '<td class="sum-time">' + timeStr + '</td>' +
+                '<td class="sum-member">' + memChip + '</td>' +
+                '<td class="sum-title">' + escHtml(e.title) +
+                    (e.location ? ' <span style="color:#a0aec0;font-size:10px;">📍' + escHtml(e.location) + '</span>' : '') +
+                '</td>' +
+            '</tr>';
+        });
+        html += '</tbody></table>';
+        listEl.innerHTML = html;
+
+        // 행 클릭 → 모달
+        listEl.querySelectorAll('tr[data-id]').forEach(function(tr){
+            tr.onclick = function(){
+                var id = this.dataset.id;
+                var ev = monthEvents.find(function(e){ return e.id === id; });
                 if(ev) openCalModal(ev);
             };
         });
