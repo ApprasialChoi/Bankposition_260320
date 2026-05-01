@@ -73,6 +73,67 @@
         .list-item .note-preview { font-size: 11px; color: #d97706; margin-top: 3px; padding: 2px 6px; background: #fef3c7; border-radius: 3px; display: inline-block; }
         .empty-state { padding: 40px 20px; text-align: center; color: #a0aec0; font-size: 13px; }
 
+        /* ===== 자료실 — 우측 상단 플로팅 패널 ===== */
+        #docs-floating {
+            position: absolute;
+            top: 70px; right: 10px;
+            width: 280px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 8px 28px rgba(0,0,0,0.18);
+            z-index: 1000;
+            display: none;
+            overflow: hidden;
+        }
+        #docs-floating.visible { display: block; }
+        #docs-floating .docs-header {
+            padding: 10px 14px;
+            background: linear-gradient(135deg, #1a365d, #2b6cb0);
+            color: white;
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 13px; font-weight: 700;
+        }
+        #docs-floating .docs-header .docs-close {
+            background: transparent; border: none; color: white;
+            font-size: 18px; cursor: pointer; padding: 0 6px; line-height: 1;
+        }
+        #docs-floating .docs-body { padding: 8px 6px 12px; max-height: 480px; overflow-y: auto; }
+
+        .docs-tree { list-style: none; padding: 0; margin: 0; font-size: 13px; }
+        .docs-tree .docs-folder, .docs-tree .docs-file {
+            padding: 7px 10px; cursor: pointer; user-select: none;
+            border-radius: 6px; display: flex; align-items: center; gap: 6px;
+            color: #2d3748; transition: background 0.15s;
+        }
+        .docs-tree .docs-folder:hover, .docs-tree .docs-file:hover {
+            background: #f0f7ff;
+        }
+        .docs-tree .docs-folder { font-weight: 700; }
+        .docs-tree .docs-folder .arrow {
+            font-size: 10px; color: #a0aec0; transition: transform 0.2s;
+            display: inline-block; width: 10px;
+        }
+        .docs-tree .docs-folder.open .arrow { transform: rotate(90deg); }
+        .docs-tree .docs-children {
+            list-style: none; padding-left: 22px; margin: 2px 0; display: none;
+        }
+        .docs-tree .docs-folder.open + .docs-children { display: block; }
+        .docs-tree .docs-file {
+            color: #4a5568; padding: 6px 10px;
+        }
+        .docs-tree .docs-file::before { content: '📄'; flex-shrink: 0; }
+        .docs-tree .docs-file .file-name { flex: 1; }
+        .docs-tree .docs-file:hover { color: #0051af; }
+
+        /* 모바일에서는 화면 거의 전체 차지 */
+        @media (max-width: 768px) {
+            #docs-floating {
+                top: 60px; right: 10px; left: 10px;
+                width: auto; max-width: none;
+            }
+            #docs-floating .docs-body { max-height: 60vh; }
+        }
+
         /* ===== 팀 캘린더 — 우측 상단 플로팅 패널 ===== */
         #cal-floating {
             position: absolute;
@@ -460,6 +521,37 @@
     <button id="mobile-toggle">📋 목록 보기</button>
     <div id="kakao-map"></div>
     <div id="map"></div>
+
+    <!-- 우측 상단 플로팅 자료실 패널 -->
+    <div id="docs-floating">
+        <div class="docs-header">
+            <span>📁 자료실</span>
+            <button class="docs-close" id="docs-close-btn">×</button>
+        </div>
+        <div class="docs-body">
+            <ul class="docs-tree">
+                <!-- 1. IBK 체크리스트 -->
+                <li>
+                    <div class="docs-file" data-pdf="data/pdf/ibk_checklist.pdf">
+                        <span class="file-name">1. IBK 체크리스트</span>
+                    </div>
+                </li>
+                <!-- 2. 지역별·물건별 담보인정비율표 -->
+                <li>
+                    <div class="docs-folder" data-folder="ratio">
+                        <span class="arrow">▶</span>
+                        <span>📂</span>
+                        <span>2. 지역별·물건별 담보인정비율표</span>
+                    </div>
+                    <ul class="docs-children">
+                        <li><div class="docs-file" data-pdf="data/pdf/ratio_seoul.pdf"><span class="file-name">서울</span></div></li>
+                        <li><div class="docs-file" data-pdf="data/pdf/ratio_incheon.pdf"><span class="file-name">인천</span></div></li>
+                        <li><div class="docs-file" data-pdf="data/pdf/ratio_gyeonggi.pdf"><span class="file-name">경기</span></div></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
 
     <!-- 우측 상단 플로팅 캘린더 패널 -->
     <div id="cal-floating">
@@ -1197,7 +1289,7 @@
     map.on('moveend zoomend', updateList);
 
     // ============================================================
-    // 라벨 토글 + 캘린더 토글 컨트롤
+    // 라벨 토글 + 캘린더 토글 + 자료실 토글 컨트롤
     // ============================================================
     (function(){
         var C = L.Control.extend({
@@ -1205,7 +1297,8 @@
             onAdd: function(){
                 var d = L.DomUtil.create('div', 'label-toggle-ctrl');
                 d.innerHTML = '<button id="btn-lbl">🏷️ 라벨</button>' +
-                              '<button id="btn-cal">📅 캘린더</button>';
+                              '<button id="btn-cal">📅 캘린더</button>' +
+                              '<button id="btn-docs">📁 자료</button>';
                 L.DomEvent.disableClickPropagation(d);
 
                 // 라벨 토글
@@ -1222,14 +1315,56 @@
                     var nowVisible = floating.classList.toggle('visible');
                     this.style.background = nowVisible ? '#0051af' : '';
                     this.style.color = nowVisible ? 'white' : '';
-                    if(nowVisible && !calState.events.length){
-                        loadCalendarMonth();
+                    if(nowVisible){
+                        // 다른 플로팅 패널 닫기
+                        document.getElementById('docs-floating').classList.remove('visible');
+                        var btnDocs = document.getElementById('btn-docs');
+                        if(btnDocs){ btnDocs.style.background = ''; btnDocs.style.color = ''; }
+                        if(!calState.events.length) loadCalendarMonth();
                     }
                 };
+
+                // 자료실 토글
+                d.querySelector('#btn-docs').onclick = function(){
+                    var floating = document.getElementById('docs-floating');
+                    var nowVisible = floating.classList.toggle('visible');
+                    this.style.background = nowVisible ? '#0051af' : '';
+                    this.style.color = nowVisible ? 'white' : '';
+                    if(nowVisible){
+                        // 다른 플로팅 패널 닫기
+                        document.getElementById('cal-floating').classList.remove('visible');
+                        var btnCal = document.getElementById('btn-cal');
+                        if(btnCal){ btnCal.style.background = ''; btnCal.style.color = ''; }
+                    }
+                };
+
                 return d;
             }
         });
         map.addControl(new C());
+    })();
+
+    // ============================================================
+    // 자료실 트리 동작
+    // ============================================================
+    (function(){
+        // 폴더 토글
+        document.querySelectorAll('.docs-tree .docs-folder').forEach(function(f){
+            f.onclick = function(){ this.classList.toggle('open'); };
+        });
+        // 파일 클릭 → 새 탭
+        document.querySelectorAll('.docs-tree .docs-file').forEach(function(el){
+            el.onclick = function(){
+                var url = this.dataset.pdf;
+                if(url) window.open(url, '_blank');
+            };
+        });
+        // 닫기 버튼
+        document.getElementById('docs-close-btn').onclick = function(){
+            document.getElementById('docs-floating').classList.remove('visible');
+            var btn = document.getElementById('btn-docs');
+            if(btn){ btn.style.background = ''; btn.style.color = ''; }
+        };
     })();
 
     // ============================================================
